@@ -33,7 +33,10 @@
 
       .album {
         @apply(--unselectable);
-        background: var(--paper-grey-350);
+        -webkit-background-size: cover;
+        background-size: cover;
+
+        background-color: var(--paper-grey-350);
         box-sizing: border-box;
         color: white;
         cursor: pointer;
@@ -83,14 +86,14 @@
       <div class="header-layout__content">
         <div class="albums">
           <fluid-grid item-selector=".album" min-width="420px" margin-width="5px">
-            <template is="dom-repeat" items="[[data.albums]]">
-              <a href$="#/album/[[item.title]]" class="album" style$="[[_computedAlbumStyle(item)]]">
+            <template is="dom-repeat" items="[[data.albums]]" as="album">
+              <a href$="#/album/[[album.title]]" class="album" style$="[[_computedAlbumStyle(album.items)]]">
                 <div class="album__gradient"></div>
                 <div class="album__detail">
-                  <div class="album__title">[[item.title]]</div>
+                  <div class="album__title">[[album.title]]</div>
                   <!--
-                  <div>[[item.date]]</div>
-                  <div>[[item.photosLength]]</div>
+                  <div>[[album.date]]</div>
+                  <div>[[album.photosLength]]</div>
                   -->
                 </div>
               </a>
@@ -100,7 +103,7 @@
 
         <template is="dom-if" if="[[!data.albums.length]]">
           <div class="missing-well">
-            <div class="missing-well__title">No has creado ningún álbum</div>
+            <div class="missing-well__title">No hay ningún álbum</div>
           </div>
         </template>        
       </div>
@@ -127,6 +130,10 @@
 
     },
 
+    observers: [
+      '_visibleChanged(visible, isAttached)'
+    ],
+
     _createAlbumTapped() {
       if (this._newAlbumOverlay) {
         return;
@@ -149,8 +156,18 @@
       });
     },
 
-    _computedAlbumStyle(item) {
-      return '';
+    _visibleChanged(visible) {
+    },
+
+    _computedAlbumStyle(items) {
+      console.log('cumpte album style')
+      if (items) {
+        const urls = album.items[0].urls.sort((a,b) => {
+          return a.width - b.width;
+        });
+        
+        return `background-image: url(${urls[0].url})`;
+      }
     },
 
     _arrowBackTapped() {

@@ -22,8 +22,12 @@
         data="{{routeData}}"></app-route>
     
     <page-switch page="[[page]]" default-page="dashboard" route="{{route}}" route-data="{{routeData}}">
-      <app-photos-dashboard-page name="dashboard" content-name="[[contentName]]" data="[[data]]"></app-photos-dashboard-page>
-      <app-photos-album-page name="album"></app-photos-album-page>
+      <app-photos-dashboard-page
+          name="dashboard"
+          content-name="[[contentName]]"
+          data="[[data]]"></app-photos-dashboard-page>
+
+      <app-photos-album-page name="album" data="[[data]]"></app-photos-album-page>
     </page-switch>
 
   </template>

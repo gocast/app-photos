@@ -1,4 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../app-route/app-location.html">
+<link rel="import" href="../app-route/app-route.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
 <link rel="import" href="../iron-image/iron-image.html">
@@ -56,6 +58,12 @@
       }
     </style>
 
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route
+        route="[[route]]"
+        pattern="/album/:albumTitle"
+        data="{{routeData}}"></app-route>
+
     <input-file
         id="inputFile"
         on-files-selected="_onFilesSelected"
@@ -68,8 +76,8 @@
             <paper-icon-button icon="arrow-back" title="Back"></paper-icon-button>
           </a>
           <div class="header-toolbar__main-content">
-            <div class="header-toolbar__title">title</div>
-            <div class="header-toolbar__subtitle">subtitle</div>
+            <div class="header-toolbar__title">[[album.title]]</div>
+            <!--<div class="header-toolbar__subtitle"></div>-->
           </div>
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
           <paper-icon-button icon="add-photo" on-tap="_selectFilesTapped" title="Add photos"></paper-icon-button>
@@ -129,12 +137,9 @@
 
     properties: {
 
-      album: {
-        type: Object,
-        value: _ => {
-          return {items:[]}
-        }
-      },
+      data: Object,
+
+      album: Object,
 
       activeSelection: {
         type: Boolean,
@@ -154,6 +159,31 @@
         value: 0
       }
 
+    },
+
+    observers: [
+      '_routePageChanged(routeData.albumTitle)',
+    ],
+
+    _routePageChanged(albumTitle) {
+      let album;
+
+      if (this.data && this.data.albums) {
+        album = this.data.albums.filter(album => {
+          return album.title === albumTitle;
+        })[0];
+      }
+
+      if (album) {
+        if (!Array.isArray(album.items)) {
+          album.items = [];
+        }
+
+        this.album = album;
+      } else {
+        window.history.pushState({}, null, '#');
+        window.dispatchEvent(new CustomEvent('location-changed'));
+      }
     },
 
     _selectAll() {
