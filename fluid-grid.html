@@ -119,7 +119,14 @@
 
     updateSizes() {
       const totalWidth = this.getBoundingClientRect().width - this._scrollbarWidth;
-      this._calculatedWidth = Math.floor(totalWidth / Math.floor(totalWidth / parseInt(this.minWidth)) - parseInt(this.marginWidth));
+      const minWidth = parseInt(this.minWidth);
+      const marginWidth = parseInt(this.marginWidth);
+
+      if (totalWidth <= minWidth) {
+        this._calculatedWidth = totalWidth - marginWidth;
+      } else {
+        this._calculatedWidth = Math.floor(totalWidth / Math.floor(totalWidth / minWidth) - marginWidth);
+      }
     },
 
     _observeItems() {

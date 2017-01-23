@@ -9,6 +9,7 @@
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../selectable-item/selectable-group.html">
+<link rel="import" href="app-photos-new-album-overlay.html">
 <link rel="import" href="fluid-grid.html">
 
 <!--
@@ -35,8 +36,7 @@
         display: none;
       }
 
-      selectable-group {
-        display: inline-block;
+      fluid-grid {
         margin-left: 4px;
       }
 
@@ -87,6 +87,8 @@
 
             <template is="dom-template">
               <button on-tap="_selectAll">Select all</button>
+              <button on-tap="_editAlbumTapped">Editar álbum</button>
+              <button on-tap="_deleteAlbumTapped">Eliminar álbum</button>
             </template>
           </dropdown-menu-container>
         </div>
@@ -103,7 +105,7 @@
       <div class="header-layout__content">
         <fluid-grid item-selector=".item" container-selector="selectable-group" min-width="100px" margin-width="4px" visible="[[visible]]" auto-height>
           <selectable-group id="selectableGroup" active-selection="{{activeSelection}}">
-            <template is="dom-repeat" items="[[album.items]]" id="domRepeat">
+            <template is="dom-repeat" items="[[_computedDomRepeatItems(album, visible)]]" id="domRepeat">
               <selectable-item class="item">
                 <iron-image
                     class="item__iron-image"
@@ -183,8 +185,7 @@
 
         this.album = album;
       } else {
-        window.history.pushState({}, null, '#');
-        window.dispatchEvent(new CustomEvent('location-changed'));
+        this._historyPushState('#');
       }
     },
 
@@ -227,6 +228,8 @@
           file.urls.then(urls => {
             requestIdleCallback(_ => {
               this.push('album.items', {urls});
+              this.$.domRepeat.render();
+
               // save inmediately every 3 at least
               // and every single one let the debounce be
               this._saveChanges({
@@ -292,13 +295,16 @@
 
     _removeSelectionTapped() {
       requestAnimationFrame(_ => {
-        this.$.selectableGroup.selection.forEach(el => {
+        const selection = this.$.selectableGroup.selection;
+        this._cancelSelection();
+
+        selection.forEach(el => {
           const itemModel = this.$.domRepeat.itemForElement(el);
           this.splice('album.items', this.album.items.indexOf(itemModel), 1);
         });
 
+        this.$.domRepeat.render();
         this._saveChanges({inmediate: true});
-        this._cancelSelection();
       });
     },
 
@@ -309,6 +315,49 @@
       } else {
         this.debounce('save-changes', _ => this._triggerUpdate(), 4000);
       }
+    },
+
+    _editAlbumTapped() {
+      if (this._newAlbumOverlay) {
+        return;
+      }
+
+      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
+        opened: true,
+        album: this.album,
+        onDetach: _ => {
+          this._newAlbumOverlay = null;
+        }
+      });
+
+      this._newAlbumOverlay.addEventListener('submit', event => {
+        this.set('album.title', event.detail.title);
+        this._newAlbumOverlay.opened = false;
+        this._historyPushState('#/album/' + this.album.title);
+        this._saveChanges({inmediate: true});
+      });
+    },
+
+    _deleteAlbumTapped() {
+      const confirmed = confirm('¿Quieres eliminar el álbum?');
+
+      if (confirmed) {
+        this.splice('data.albums', this.data.albums.indexOf(this.album), 1);
+        this._historyPushState('#');
+        this._saveChanges({inmediate: true});
+      }
+    },
+
+    _historyPushState(url) {
+      window.history.pushState({}, null, url);
+      window.dispatchEvent(new CustomEvent('location-changed'));
+    },
+
+    _computedDomRepeatItems(album, visible) {
+      if (visible) {
+        return album.items;
+      }
+      return [];
     },
 
     _triggerUpdate() {

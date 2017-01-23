@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="app-photos-new-album-overlay.html">
@@ -24,18 +25,17 @@
 
       .header-layout__content {
         max-width: 100%;
+        padding: 0;
       }
 
       fluid-grid {
         @apply(--layout-horizontal);
         @apply(--layout-wrap);
+        margin-left: 5px;
       }
 
       .album {
         @apply(--unselectable);
-        -webkit-background-size: cover;
-        background-size: cover;
-
         background-color: var(--paper-grey-350);
         box-sizing: border-box;
         color: white;
@@ -47,6 +47,11 @@
         text-decoration: none;
       }
 
+      .album__iron-image {
+        height: 100%;
+        width: 100%;
+      }
+
       .album__detail {
         position: absolute;
         bottom: 24px;
@@ -55,8 +60,9 @@
       }
 
       .album__title {
-        font-weight: bold;
         font-size: 18px;
+        font-weight: bold;
+        margin: 4px 0;
       }
 
       .album__gradient {
@@ -86,8 +92,9 @@
       <div class="header-layout__content">
         <div class="albums">
           <fluid-grid id="fluidGrid" item-selector=".album" min-width="420px" margin-width="5px" visible="[[visible]]">
-            <template is="dom-repeat" items="[[data.albums]]" as="album">
-              <a href$="#/album/[[album.title]]" class="album" style$="[[_computedAlbumStyle(album.items)]]">
+            <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeatItems(data.albums, visible)]]" as="album">
+              <a href$="#/album/[[album.title]]" class="album">
+                <iron-image class="album__iron-image" src="[[_computeAlbumImageSrc(album.items)]]" sizing="cover"></iron-image>
                 <div class="album__gradient"></div>
                 <div class="album__detail">
                   <div class="album__title">[[album.title]]</div>
@@ -127,10 +134,6 @@
 
     },
 
-    observers: [
-      '_visibleChanged(visible, isAttached)'
-    ],
-
     _createAlbumTapped() {
       if (this._newAlbumOverlay) {
         return;
@@ -149,23 +152,25 @@
         }
 
         this.push('data.albums', event.detail);
+        this.$.domRepeat.render();
         this._newAlbumOverlay.opened = false;
       });
     },
 
-    _visibleChanged(visible) {
+    _computedDomRepeatItems(albums, visible) {
       if (visible) {
+        return albums;
       }
+      return [];
     },
 
-    _computedAlbumStyle(items) {
-      console.log('compute album style')
-      if (items) {
-        const urls = album.items[0].urls.sort((a,b) => {
+    _computeAlbumImageSrc(items) {
+      if (items && items.length) {
+        const urls = items[0].urls.sort((a,b) => {
           return a.width - b.width;
         });
-        
-        return `background-image: url(${urls[0].url})`;
+
+        return urls[0].url;
       }
     },
 
