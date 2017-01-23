@@ -85,16 +85,13 @@
 
       <div class="header-layout__content">
         <div class="albums">
-          <fluid-grid item-selector=".album" min-width="420px" margin-width="5px">
+          <fluid-grid id="fluidGrid" item-selector=".album" min-width="420px" margin-width="5px" visible="[[visible]]">
             <template is="dom-repeat" items="[[data.albums]]" as="album">
               <a href$="#/album/[[album.title]]" class="album" style$="[[_computedAlbumStyle(album.items)]]">
                 <div class="album__gradient"></div>
                 <div class="album__detail">
                   <div class="album__title">[[album.title]]</div>
-                  <!--
-                  <div>[[album.date]]</div>
-                  <div>[[album.photosLength]]</div>
-                  -->
+                  <div>[[_computePhotosLength(album.items)]]</div>
                 </div>
               </a>
             </template>
@@ -157,16 +154,24 @@
     },
 
     _visibleChanged(visible) {
+      if (visible) {
+      }
     },
 
     _computedAlbumStyle(items) {
-      console.log('cumpte album style')
+      console.log('compute album style')
       if (items) {
         const urls = album.items[0].urls.sort((a,b) => {
           return a.width - b.width;
         });
         
         return `background-image: url(${urls[0].url})`;
+      }
+    },
+
+    _computePhotosLength(items) {
+      if (items && items.length) {
+        return items.length + ' fotos';
       }
     },
 

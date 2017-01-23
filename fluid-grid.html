@@ -11,11 +11,9 @@
 <dom-module id="fluid-grid">
   <template>
     <style>
-
       :host {
         display: block;
       }
-
     </style>
 
     <content></content>
@@ -80,6 +78,14 @@
         value: false
       },
 
+      /**
+       * Whether this element is visible or not so it can make size calculations.
+       */
+      visible: {
+        type: Boolean,
+        value: false
+      },
+
       _calculatedWidth: {
         type: Number,
         observer: '_calculatedWidthChanged'
@@ -93,9 +99,12 @@
 
     },
 
+    observers: [
+      '_visibleChanged(visible, isAttached)'
+    ],
+
     attached() {
       this._scrollbarWidth = this._getScrollBarWidth();
-      this._updateCalculatedWidth();
       this._updateItems();
 
       requestAnimationFrame(_ => {
@@ -106,6 +115,11 @@
 
     detached() {
       this._observer.disconnect();
+    },
+
+    updateSizes() {
+      const totalWidth = this.getBoundingClientRect().width - this._scrollbarWidth;
+      this._calculatedWidth = Math.floor(totalWidth / Math.floor(totalWidth / parseInt(this.minWidth)) - parseInt(this.marginWidth));
     },
 
     _observeItems() {
@@ -121,18 +135,13 @@
     },
 
     _onIronResize() {
-      this.debounce('_updateCalculatedWidth', this._updateCalculatedWidth.bind(this), 400);
+      this.debounce('updateSizes', this.updateSizes.bind(this), 400);
     },
 
     _updateItems: function() {
       var nodes = Polymer.dom(this).querySelectorAll(this.itemSelector);
       this._setItems(nodes);
       this._calculatedWidthChanged(this._calculatedWidth);
-    },
-
-    _updateCalculatedWidth() {
-      const totalWidth = this.getBoundingClientRect().width - this._scrollbarWidth;
-      this._calculatedWidth = totalWidth / Math.floor(totalWidth / parseInt(this.minWidth)) - parseInt(this.marginWidth);
     },
 
     _calculatedWidthChanged(_calculatedWidth) {
@@ -145,6 +154,14 @@
             }
           }
         }
+      }
+    },
+
+    _visibleChanged(visible) {
+      if (visible) {
+        requestAnimationFrame(_ => {
+          this.updateSizes();
+        });
       }
     },
 

@@ -101,7 +101,7 @@
       </div>
 
       <div class="header-layout__content">
-        <fluid-grid item-selector=".item" container-selector="selectable-group" min-width="100px" margin-width="4px" auto-height>
+        <fluid-grid item-selector=".item" container-selector="selectable-group" min-width="100px" margin-width="4px" visible="[[visible]]" auto-height>
           <selectable-group id="selectableGroup" active-selection="{{activeSelection}}">
             <template is="dom-repeat" items="[[album.items]]" id="domRepeat">
               <selectable-item class="item">
@@ -145,6 +145,8 @@
         type: Boolean,
         value: false
       },
+
+      visible: Boolean,
 
       _uploadedFiles: {
         type: Object,
