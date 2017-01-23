@@ -1,0 +1,82 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../app-route/app-location.html">
+<link rel="import" href="../app-route/app-route.html">
+<link rel="import" href="app-photos-dashboard-page.html">
+<link rel="import" href="app-photos-album-page.html">
+<link rel="import" href="page-switch.html">
+
+<!--
+`app-photos`
+
+@demo demo/app-photos.html 
+-->
+<dom-module id="app-photos">
+  <template>
+    <style>
+    </style>
+
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route
+        route="[[route]]"
+        pattern="/:page"
+        data="{{routeData}}"></app-route>
+    
+    <page-switch page="[[page]]" default-page="dashboard" route="{{route}}" route-data="{{routeData}}">
+      <app-photos-dashboard-page name="dashboard" content-name="[[contentName]]" data="[[data]]"></app-photos-dashboard-page>
+      <app-photos-album-page name="album"></app-photos-album-page>
+    </page-switch>
+
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  'use strict';
+
+  Polymer({
+
+    is: 'app-photos',
+
+    properties: {
+
+      data: {
+        type: Object,
+        value: _ => {
+          return {};
+        }
+      },
+
+      release: Object,
+
+      contentName: String,
+
+      contentId: Number,
+
+      dataUpdatedAt: Number,
+
+      releaseUpdatedAt: Number,
+
+      route: Object,
+
+      routeData: Object,
+
+      page: String
+
+    },
+
+    listeners: {
+      'trigger-update': '_updateData'
+    },
+
+    _updateData() {
+      this.fire('app-update', {
+        data: this.data,
+        contentId: this.contentId,
+        updateRelease: false
+      });
+    }
+
+  });
+
+}());
+</script>

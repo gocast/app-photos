@@ -1,0 +1,120 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`page-switch`
+
+
+@demo demo/index.html 
+-->
+
+<dom-module id="page-switch">
+  <template>
+    <style>
+
+      :host {
+        display: block;
+        height: 100%;
+      }
+
+      ::content > :not([active]) {
+        display: none !important;
+      }
+      
+      ::content > .animating {
+        background-color: var(--goc-background-color);
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 1;
+      }
+
+    </style>
+
+    <content id="content"></content>
+
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  'use strict';
+
+  Polymer({
+
+    is: 'page-switch',
+
+    properties: {
+
+      page: {
+        type: String,
+        observer: '_pageChanged'
+      },
+
+      routeData: Object,
+
+      defaultPage: String
+
+    },
+
+    observers: [
+      '_routePageChanged(routeData.page)',
+      '_routePathChanged(route.path)'
+    ],
+
+    attached() {
+      if (!this.page) {
+        this._routePageChanged();
+      }
+    },
+
+    _routePageChanged(page) {
+      if (page) {
+        this.page = page;
+      }
+    },
+
+    _routePathChanged(path) {
+      setTimeout(_ => {
+        if (!path) {
+          this.set('routeData.page', this.defaultPage);
+        }
+      });
+    },
+
+    _pageChanged(page, old) {
+      const pageElement = Polymer.dom(this).querySelector(`[name="${page}"]`);
+
+      if (!pageElement) {
+        this.page = this.defaultPage;
+        return;
+      }
+
+      const oldElement = Polymer.dom(this).querySelector(`[name="${old}"]`);
+
+      pageElement.visible = true;
+      pageElement.setAttribute('active', true);
+
+      if (oldElement) {
+        document.body.style.overflow = 'hidden';
+        pageElement.classList.add('animating');
+
+        const animation = pageElement.animate([
+          {opacity: 0},
+          {opacity: 1}
+        ], 100);
+
+        animation.onfinish = _ => {
+          pageElement.classList.remove('animating');
+          oldElement.visible = false;
+          oldElement.removeAttribute('active');
+          document.body.style.overflow = '';
+        };
+      }
+    }
+
+  });
+
+}());
+</script>

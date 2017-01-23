@@ -1,0 +1,163 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../goc-icons/goc-icons.html">
+<link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="app-photos-new-album-overlay.html">
+<link rel="import" href="fluid-grid.html">
+
+<!--
+`app-photos-dashboard-page`
+
+
+@demo demo/app-photos-dashboard-page.html 
+-->
+<dom-module id="app-photos-dashboard-page">
+  <template>
+    <style include="header-layout-styles button-styles missing-well-styles">
+
+      :host {
+        background: var(--goc-background-color);
+        display: block;
+        height: 100%;
+      }
+
+      .header-layout__content {
+        max-width: 100%;
+      }
+
+      fluid-grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+      }
+
+      .album {
+        @apply(--unselectable);
+        background: var(--paper-grey-350);
+        box-sizing: border-box;
+        color: white;
+        cursor: pointer;
+        height: 280px;
+        margin: 5px 5px 0 0;
+        overflow: hidden;
+        position: relative;
+        text-decoration: none;
+      }
+
+      .album__detail {
+        position: absolute;
+        bottom: 24px;
+        left: 24px;
+        right: 24px;
+      }
+
+      .album__title {
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .album__gradient {
+        background-image: -webkit-linear-gradient(to bottom,transparent,rgba(0,0,0,0.74));
+        background-image: linear-gradient(to bottom,transparent,rgba(0,0,0,0.74));
+        bottom: 0;
+        content: '';
+        height: 160px;
+        position: absolute;
+        width: 100%;
+      }
+    </style>
+
+    <div class="header-layout">
+      <div class="header-layout__header">
+        <div class="header-toolbar">
+          <paper-icon-button icon="arrow-back" on-tap="_arrowBackTapped" title="Back"></paper-icon-button>
+          <div class="header-toolbar__main-content">
+            <div class="header-toolbar__title">[[contentName]]</div>
+            <div class="header-toolbar__subtitle">Fotos</div>
+          </div>
+          <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
+          <button class="button" on-tap="_createAlbumTapped">Crear albúm</button>
+        </div>
+      </div>
+
+      <div class="header-layout__content">
+        <div class="albums">
+          <fluid-grid item-selector=".album" min-width="420px" margin-width="5px">
+            <template is="dom-repeat" items="[[data.albums]]">
+              <a href$="#/album/[[item.title]]" class="album" style$="[[_computedAlbumStyle(item)]]">
+                <div class="album__gradient"></div>
+                <div class="album__detail">
+                  <div class="album__title">[[item.title]]</div>
+                  <!--
+                  <div>[[item.date]]</div>
+                  <div>[[item.photosLength]]</div>
+                  -->
+                </div>
+              </a>
+            </template>
+          </fluid-grid>
+        </div>
+
+        <template is="dom-if" if="[[!data.albums.length]]">
+          <div class="missing-well">
+            <div class="missing-well__title">No has creado ningún álbum</div>
+          </div>
+        </template>        
+      </div>
+    </div>
+
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  'use strict';
+
+  Polymer({
+
+    is: 'app-photos-dashboard-page',
+
+    properties: {
+
+      data: Object,
+
+      contentName: String,
+
+      visible: Boolean
+
+    },
+
+    _createAlbumTapped() {
+      if (this._newAlbumOverlay) {
+        return;
+      }
+
+      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
+        opened: true,
+        onDetach: _ => {
+          this._newAlbumOverlay = null;
+        }
+      });
+
+      this._newAlbumOverlay.addEventListener('submit', event => {
+        if (!this.data.albums) {
+          this.set('data.albums', []);
+        }
+
+        this.push('data.albums', event.detail);
+        this._newAlbumOverlay.opened = false;
+      });
+    },
+
+    _computedAlbumStyle(item) {
+      return '';
+    },
+
+    _arrowBackTapped() {
+      this.fire('close-app');
+    }
+
+  });
+
+}());
+</script>

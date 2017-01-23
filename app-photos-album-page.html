@@ -1,0 +1,296 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../goc-icons/goc-icons.html">
+<link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../input-file/input-file.html">
+<link rel="import" href="../dropdown-menu/dropdown-menu-container.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../selectable-item/selectable-group.html">
+<link rel="import" href="fluid-grid.html">
+
+<!--
+`app-photos-album-page`
+
+
+@demo demo/app-photos-album-page.html 
+-->
+<dom-module id="app-photos-album-page">
+  <template>
+    <style include="header-layout-styles missing-well-styles">
+      :host {
+        background: var(--goc-background-color);
+        display: block;
+        height: 100%;
+      }
+
+      .header-layout__content {
+        max-width: 100%;
+        padding: 0;
+      }
+
+      #inputFile {
+        display: none;
+      }
+
+      selectable-group {
+        display: inline-block;
+        margin-left: 4px;
+      }
+
+      selectable-item {
+        background: var(--paper-grey-200);
+        cursor: pointer;
+        display: inline-block;
+        float: left;
+        margin: 4px 4px 0 0;
+      }
+
+      .item__iron-image {
+        background: white;
+        height: 100%;
+        width: 100%;
+        --iron-image-placeholder: {
+          background: var(--paper-grey-300);
+        }
+      }
+    </style>
+
+    <input-file
+        id="inputFile"
+        on-files-selected="_onFilesSelected"
+        on-load="_onLoadFiles"></input-file>
+
+    <div class="header-layout">
+      <div class="header-layout__header">
+        <div class="header-toolbar">
+         <a href="#">
+            <paper-icon-button icon="arrow-back" title="Back"></paper-icon-button>
+          </a>
+          <div class="header-toolbar__main-content">
+            <div class="header-toolbar__title">title</div>
+            <div class="header-toolbar__subtitle">subtitle</div>
+          </div>
+          <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
+          <paper-icon-button icon="add-photo" on-tap="_selectFilesTapped" title="Add photos"></paper-icon-button>
+
+          <dropdown-menu-container>
+            <paper-icon-button icon="dots-vertical" title="More"></paper-icon-button>
+
+            <template is="dom-template">
+              <button on-tap="_selectAll">Select all</button>
+            </template>
+          </dropdown-menu-container>
+        </div>
+
+        <div class$="[[_computeSecondaryToolbarClass(activeSelection)]]">
+          <paper-icon-button icon="close" on-tap="_cancelSelection" title="Cancel selection"></paper-icon-button>
+          <div class="header-toolbar__main-content">
+            <div class="header-toolbar__title">[[selection.length]]</div>
+          </div>
+          <paper-icon-button icon="delete" on-tap="_removeSelectionTapped" title="Remove selected images"></paper-icon-button>
+        </div>
+      </div>
+
+      <div class="header-layout__content">
+        <fluid-grid item-selector=".item" container-selector="selectable-group" min-width="100px" margin-width="4px" auto-height>
+          <selectable-group id="selectableGroup" active-selection="{{activeSelection}}">
+            <template is="dom-repeat" items="[[album.items]]" id="domRepeat">
+              <selectable-item class="item">
+                <iron-image
+                    class="item__iron-image"
+                    src="[[_computedThumbnailUrl(item)]]"
+                    preload
+                    sizing="cover"
+                    on-error-changed="_imageLoadError"></iron-image>
+              </selectable-item>
+            </template>
+          </selectable-group>
+        </fluid-grid>
+
+        <template is="dom-if" if="[[!album.items.length]]">
+          <div class="missing-well">
+            <div class="missing-well__title">El álbum está vacío</div>
+          </div>
+        </template>  
+      </div>
+    </div>
+
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  'use strict';
+
+  Polymer({
+
+    is: 'app-photos-album-page',
+
+    properties: {
+
+      album: {
+        type: Object,
+        value: _ => {
+          return {items:[]}
+        }
+      },
+
+      activeSelection: {
+        type: Boolean,
+        value: false
+      },
+
+      _uploadedFiles: {
+        type: Object,
+        value: _ => {
+          return {};
+        }
+      },
+
+      // Number of files being uploaded
+      _uploadingFiles: {
+        type: Number,
+        value: 0
+      }
+
+    },
+
+    _selectAll() {
+      this.$.selectableGroup.items.forEach(item => {
+        item.selected = true;
+      });
+    },
+
+    _cancelSelection() {
+      this.$.selectableGroup.selection.forEach(item => {
+        item.selected = false;
+      });
+    },
+
+    _selectFilesTapped() {
+      this.$.inputFile.selectFiles();
+    },
+
+    _onFilesSelected(event) {
+      const files = event.detail.files;
+      this._uploadingFiles = this._uploadingFiles + files.length;
+    },
+
+    _onLoadFiles(event) {
+      const files = event.detail.files;
+
+      // what when there is an error?
+      for (let i = 0; i < files.length; i++) {
+        this._uploadingFiles --;
+
+        const file = files[i];
+
+        if (file.urls) {
+          const parts = file.name.split('.');
+          parts.pop();
+          const filename = parts.join('.');
+          this._uploadedFiles[filename] = file;
+
+          file.urls.then(urls => {
+            requestIdleCallback(_ => {
+              this.push('album.items', {urls});
+              // save inmediately every 3 at least
+              // and every single one let the debounce be
+              this._saveChanges({
+                inmediate: this._uploadingFiles % 3 === 0
+              });
+            });
+          });
+        }
+      }
+    },
+
+    _imageLoadError(event) {
+      if (event.detail.value) {
+        const item = event.model.item;
+        const urls = item.urls;
+        if (urls) {
+          const original = urls.find(item => {
+            const reg = new RegExp(`-${item.width}-${item.height}\\.\\w+`);
+            return !item.url.match(reg);
+          });
+          try {
+            const filename = original.url.match(/\/([^\/]*)$/)[1];
+            const parts = filename.split('.');
+            parts.pop();
+            const name = parts.join('.');
+            const file = this._uploadedFiles[name];
+            const fileTmpUrl = URL.createObjectURL(file);
+            const ironImage = event.path[0];
+            ironImage.src = fileTmpUrl;
+            this._uploadedFiles[name] = null;
+          } catch(err) {
+            // If not possible, load from network few times and at last
+            // try the original
+            const ironImage = event.path[0];
+            if (item.retries === null) {
+              // no image available
+              return;
+            }
+            item.retries = item.retries || 0;
+            item.retries ++;
+            if (item.retries < 3) {
+              // Try the same again
+              this.async(_ => ironImage._load(ironImage.src), item.retries * 1500);
+            } else if (item.retries !== null){
+              item.retries = null;
+              // try original
+              if (original) {
+                ironImage._load(original.url);
+              }
+            }
+          }
+        }
+      }
+    },
+
+    _computeSecondaryToolbarClass(activeSelection) {
+      let classAttr = 'header-toolbar header-toolbar--secondary';
+      if (activeSelection) {
+        classAttr += ' header-toolbar--active';
+      }
+      return classAttr;
+    },
+
+    _removeSelectionTapped() {
+      requestAnimationFrame(_ => {
+        this.$.selectableGroup.selection.forEach(el => {
+          const itemModel = this.$.domRepeat.itemForElement(el);
+          this.splice('album.items', this.album.items.indexOf(itemModel), 1);
+        });
+
+        this._saveChanges({inmediate: true});
+        this._cancelSelection();
+      });
+    },
+
+    _saveChanges({inmediate=false} = {}) {
+      if (inmediate) {
+        this.cancelDebouncer('save-changes');
+        this._triggerUpdate();
+      } else {
+        this.debounce('save-changes', _ => this._triggerUpdate(), 4000);
+      }
+    },
+
+    _triggerUpdate() {
+      this.fire('trigger-update');
+    },
+
+    _computedThumbnailUrl(slide) {
+      const urls = slide.urls.sort((a,b) => {
+        return a.width - b.width;
+      });
+      return urls[0].url;
+    }
+
+  });
+
+}());
+</script>

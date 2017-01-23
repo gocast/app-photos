@@ -1,0 +1,110 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../goc-icons/goc-icons.html">
+<link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../overlay-container/animated-overlay-behavior.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+
+<!--
+`app-photos-new-album-overlay`
+
+
+@demo demo/app-photos-new-album-overlay.html 
+-->
+<dom-module id="app-photos-new-album-overlay">
+  <template>
+    <style include="header-layout-styles button-styles form-styles">
+      :host {
+        background: var(--goc-background-color);
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+    </style>
+
+    <div class="header-layout">
+      <div class="header-layout__header">
+        <div class="header-toolbar">
+          <paper-icon-button on-tap="_closeTapped" icon="close"></paper-icon-button>
+          <div class="header-toolbar__main-content">
+            <div class="header-toolbar__title">Crear álbum</div>
+          </div>
+          <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
+          <button class="button" on-tap="_submitTapped">Crear</button>
+        </div>
+      </div>
+
+      <div class="header-layout__content">
+        <div class="form">
+          <div class="form__item form__item--last">
+            <label class="form__label">Nombre del álbum</label>
+            <input
+                id="titleInput"
+                class="form__input"
+                placeholder="Nombre del álbum"
+                value$="[[album.title]]"
+                on-keyup="_validate">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  'use strict';
+
+  Polymer({
+
+    is: 'app-photos-new-album-overlay',
+
+    properties: {
+
+      album: Object
+
+    },
+
+    behaviors: [
+      AnimatedOverlayBehavior
+    ],
+
+    listeners: {
+      'overlay-open-animation-finish': '_onOverlayOpenAnimationFinish'
+    },
+
+    _validate() {
+      let isValid = true;
+
+      const isTitleValid = this.$.titleInput.value.length;
+      isValid = isValid && isTitleValid;
+
+      if (isTitleValid) {
+        this.$.titleInput.parentElement.classList.remove('form__item--invalid');
+      } else {
+        this.$.titleInput.parentElement.classList.add('form__item--invalid');
+      }
+
+      return isValid;
+    },
+
+    _submitTapped() {
+      if (this._validate()) {
+        this.fire('submit', {title: this.$.titleInput.value});
+      }
+    },
+
+    _onOverlayOpenAnimationFinish() {
+      this.$.titleInput.focus();
+    },
+
+    _closeTapped() {
+      this.opened = false;
+    }
+
+  });
+
+}());
+</script>
