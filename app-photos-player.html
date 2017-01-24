@@ -10,12 +10,26 @@
 <dom-module id="app-photos-player">
   <template>
     <style>
-
       :host {
         display: block;
       }
 
+      #container {
+        height: 100%;
+        position: relative;
+        width: 100%;
+      }
+
+      #container iron-image {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
     </style>
+
+    <div id="container"></div>
 
   </template>
 </dom-module>
@@ -30,6 +44,102 @@
 
     properties: {
 
+      data: Array,
+
+      currentPhoto: {
+        type: Object,
+        readOnly: true,
+        observer: '_currentPhotoChanged'
+      },
+
+      _photos: Array,
+
+      _photosInterval: Number
+
+    },
+
+    observers: [
+      '_dataChanged(data, isAttached)'
+    ],
+
+    detached() {
+      this._removePhotosInterval();
+    },
+
+    _removePhotosInterval() {
+      if (this._photosInterval) {
+        clearInterval(this._photosInterval);
+        this._photosInterval = null;
+      }
+    },
+
+    _dataChanged(data) {
+      if (!data || !data.albums || !data.albums.length) {
+        this._removePhotosInterval();
+        this._setCurrentPhoto(null);
+        return;
+      }
+
+      // Create iron images
+      this._photos = data.albums.map(album => {
+        return album.photos.map(photo => {
+          // Get bigger url
+          const urls = photo.urls.sort((a,b) => {
+            return b.width - a.width;
+          });
+
+          return this.create('iron-image', {
+            src: urls[0].url,
+            sizing: 'contain',
+            preload: true
+          });
+        });
+      });
+
+      this._setCurrentPhoto(this._photos[0]);
+      this._removePhotosInterval();
+
+      this._photosInterval = setInterval(_ => {
+        const index = this._photos.indexOf(this.currentPhoto);
+
+        if (this._photos[index + 1]) {
+          this._setCurrentPhoto(this._photos[index + 1]);
+        } else {
+          this._setCurrentPhoto(this._photos[0]);
+        }
+      }, 8000);
+    },
+
+    _currentPhotoChanged(currentPhoto, old) {
+      if (currentPhoto) {
+        Polymer.dom(this.$.container).appendChild(currentPhoto);
+
+        requestAnimationFrame(_ => {
+          const animation = currentPhoto.animate([
+            {opacity: 0},
+            {opacity: 1}
+          ], {
+            duration: 600,
+            easing: 'cubic-bezier(0.47, 0, 0.745, 0.715)'
+          });
+        });
+      }
+
+      if (old) {
+        requestAnimationFrame(_ => {
+          const animation = old.animate([
+            {opacity: 1},
+            {opacity: 0}
+          ], {
+            duration: 600,
+            easing: 'cubic-bezier(0.47, 0, 0.745, 0.715)'
+          });
+
+          animation.onfinish = _ => {
+            old.remove();
+          };
+        });
+      }
     }
 
   });

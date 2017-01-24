@@ -48,7 +48,7 @@
         margin: 4px 4px 0 0;
       }
 
-      .item__iron-image {
+      .photo__iron-image {
         background: white;
         height: 100%;
         width: 100%;
@@ -103,12 +103,12 @@
       </div>
 
       <div class="header-layout__content">
-        <fluid-grid item-selector=".item" container-selector="selectable-group" min-width="100px" margin-width="4px" visible="[[visible]]" auto-height>
+        <fluid-grid item-selector=".photo" container-selector="selectable-group" min-width="100px" margin-width="4px" visible="[[visible]]" auto-height>
           <selectable-group id="selectableGroup" active-selection="{{activeSelection}}">
-            <template is="dom-repeat" items="[[_computedDomRepeatItems(album, visible)]]" id="domRepeat">
-              <selectable-item class="item">
+            <template is="dom-repeat" items="[[_computedDomRepeat(album, visible)]]" id="domRepeat">
+              <selectable-item class="photo">
                 <iron-image
-                    class="item__iron-image"
+                    class="photo__iron-image"
                     src="[[_computedThumbnailUrl(item)]]"
                     preload
                     sizing="cover"
@@ -118,7 +118,7 @@
           </selectable-group>
         </fluid-grid>
 
-        <template is="dom-if" if="[[!album.items.length]]">
+        <template is="dom-if" if="[[!album.photos.length]]">
           <div class="missing-well">
             <div class="missing-well__title">El álbum está vacío</div>
           </div>
@@ -179,8 +179,8 @@
       }
 
       if (album) {
-        if (!Array.isArray(album.items)) {
-          album.items = [];
+        if (!Array.isArray(album.photos)) {
+          album.photos = [];
         }
 
         this.album = album;
@@ -227,7 +227,7 @@
 
           file.urls.then(urls => {
             requestIdleCallback(_ => {
-              this.push('album.items', {urls});
+              this.push('album.photos', {urls});
               this.$.domRepeat.render();
 
               // save inmediately every 3 at least
@@ -300,7 +300,7 @@
 
         selection.forEach(el => {
           const itemModel = this.$.domRepeat.itemForElement(el);
-          this.splice('album.items', this.album.items.indexOf(itemModel), 1);
+          this.splice('album.photos', this.album.photos.indexOf(itemModel), 1);
         });
 
         this.$.domRepeat.render();
@@ -353,9 +353,9 @@
       window.dispatchEvent(new CustomEvent('location-changed'));
     },
 
-    _computedDomRepeatItems(album, visible) {
+    _computedDomRepeat(album, visible) {
       if (visible) {
-        return album.items;
+        return album.photos;
       }
       return [];
     },

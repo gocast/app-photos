@@ -92,13 +92,13 @@
       <div class="header-layout__content">
         <div class="albums">
           <fluid-grid id="fluidGrid" item-selector=".album" min-width="420px" margin-width="5px" visible="[[visible]]">
-            <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeatItems(data.albums, visible)]]" as="album">
+            <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeat(data.albums, visible)]]" as="album">
               <a href$="#/album/[[album.title]]" class="album">
-                <iron-image class="album__iron-image" src="[[_computeAlbumImageSrc(album.items)]]" sizing="cover"></iron-image>
+                <iron-image class="album__iron-image" src="[[_computeAlbumImageSrc(album.photos)]]" sizing="cover"></iron-image>
                 <div class="album__gradient"></div>
                 <div class="album__detail">
                   <div class="album__title">[[album.title]]</div>
-                  <div>[[_computePhotosLength(album.items)]]</div>
+                  <div>[[_computePhotosLength(album.photos)]]</div>
                 </div>
               </a>
             </template>
@@ -157,16 +157,16 @@
       });
     },
 
-    _computedDomRepeatItems(albums, visible) {
+    _computedDomRepeat(albums, visible) {
       if (visible) {
         return albums;
       }
       return [];
     },
 
-    _computeAlbumImageSrc(items) {
-      if (items && items.length) {
-        const urls = items[0].urls.sort((a,b) => {
+    _computeAlbumImageSrc(photos) {
+      if (photos && photos.length) {
+        const urls = photos[0].urls.sort((a,b) => {
           return a.width - b.width;
         });
 
@@ -174,9 +174,9 @@
       }
     },
 
-    _computePhotosLength(items) {
-      if (items && items.length) {
-        return items.length + ' fotos';
+    _computePhotosLength(photos) {
+      if (photos && photos.length) {
+        return photos.length + ' fotos';
       }
     },
 
