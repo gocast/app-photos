@@ -154,6 +154,7 @@
         this.push('data.albums', event.detail);
         this.$.domRepeat.render();
         this._newAlbumOverlay.opened = false;
+        this.fire('trigger-update');
       });
     },
 
