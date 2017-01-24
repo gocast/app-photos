@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
-    <link rel="import" href="../app-photos-editor.html">
+    <link rel="import" href="../app-photos.html">
     <link rel="import" href="../../overlay-container/overlay-container.html">
 
     <style is="custom-style">
@@ -38,12 +38,12 @@
   <body>
 
     <overlay-container></overlay-container>
-    <app-photos-editor></app-photos-editor>
+    <app-photos></app-photos>
 
     <script>
 
       window.onload = () => {
-        const el = document.querySelector('app-photos-editor');
+        const el = document.querySelector('app-photos');
 
         // el.data = {};
 
