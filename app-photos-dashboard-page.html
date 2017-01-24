@@ -1,11 +1,11 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../fluid-grid/fluid-grid.html">
 <link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="app-photos-new-album-overlay.html">
-<link rel="import" href="fluid-grid.html">
 
 <!--
 `app-photos-dashboard-page`
@@ -154,6 +154,10 @@
         this.push('data.albums', event.detail);
         this.$.domRepeat.render();
         this._newAlbumOverlay.opened = false;
+
+        window.history.pushState({}, null, `#/album/${event.detail.title}`);
+        window.dispatchEvent(new CustomEvent('location-changed'));
+
         this.fire('trigger-update');
       });
     },
