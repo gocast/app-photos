@@ -9,20 +9,20 @@
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
-    <link rel="import" href="../app-photos.html">
+    <link rel="import" href="../app-photos-editor.html">
   </head>
   <body>
     <test-fixture id="basic">
       <template>
-        <app-photos></app-photos>
+        <app-photos-editor></app-photos-editor>
       </template>
     </test-fixture>
 
     <script>
-      suite('app-photos', function() {
+      suite('app-photos-editor', function() {
         test('instantiating the element works', function() {
           var element = fixture('basic');
-          assert.equal(element.is, 'app-photos');
+          assert.equal(element.is, 'app-photos-editor');
         });
       });
     </script>
