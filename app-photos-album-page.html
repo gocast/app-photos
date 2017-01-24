@@ -77,7 +77,7 @@
           </a>
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[album.title]]</div>
-            <!--<div class="header-toolbar__subtitle"></div>-->
+            <!--<div class="header-toolbar__subtitle">[[_computeAlbumLength(album.photos)]]</div>-->
           </div>
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
           <paper-icon-button icon="add-photo" on-tap="_selectFilesTapped" title="Add photos"></paper-icon-button>
@@ -359,6 +359,12 @@
       }
       return [];
     },
+
+    // _computeAlbumLength(photos) {
+    //   if (photos) {
+    //     return photos.length + ' fotos';
+    //   }
+    // },
 
     _triggerUpdate() {
       this.fire('trigger-update');
