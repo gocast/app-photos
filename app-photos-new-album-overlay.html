@@ -63,6 +63,8 @@
 
     properties: {
 
+      albumTitles: Array,
+
       album: Object
 
     },
@@ -79,7 +81,8 @@
     _validate() {
       let isValid = true;
 
-      const isTitleValid = this.$.titleInput.value.length;
+      const title = this.$.titleInput.value;
+      const isTitleValid = title.length && this.albumTitles.indexOf(title) === -1;
       isValid = isValid && isTitleValid;
 
       if (isTitleValid) {

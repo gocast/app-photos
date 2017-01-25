@@ -139,8 +139,12 @@
         return;
       }
 
+      const albums = (this.data && this.data.albums) || [];
+      const albumTitles = albums.map(album => album.title);
+
       this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
         opened: true,
+        albumTitles: albumTitles,
         onDetach: _ => {
           this._newAlbumOverlay = null;
         }
