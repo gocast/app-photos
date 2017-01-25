@@ -141,7 +141,12 @@
 
       data: Object,
 
-      album: Object,
+      albumTitle: String,
+
+      album: {
+        type: Object,
+        computed: '_computeAlbum(data, albumTitle)'
+      },
 
       activeSelection: {
         type: Boolean,
@@ -170,23 +175,24 @@
     ],
 
     _routePageChanged(albumTitle) {
+      this.debounce('_routePageChanged', _ => {
+        this.albumTitle = albumTitle;
+        if (!this.album) {
+          this._historyPushState('#');
+        }
+      })
+    },
+
+    _computeAlbum(data, albumTitle) {
       let album;
 
-      if (this.data && this.data.albums) {
-        album = this.data.albums.filter(album => {
-          return album.title === albumTitle;
-        })[0];
-      }
-
-      if (album) {
-        if (!Array.isArray(album.photos)) {
+      if (data && data.albums) {
+        album = data.albums.filter(a => a.title === albumTitle)[0];
+        if (album && !Array.isArray(album.photos)) {
           album.photos = [];
         }
-
-        this.album = album;
-      } else {
-        this._historyPushState('#');
       }
+      return album;
     },
 
     _selectAll() {
