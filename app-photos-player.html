@@ -81,18 +81,19 @@
       }
 
       // Create iron images
-      this._photos = data.albums.map(album => {
-        return album.photos.map(photo => {
+      this._photos = [];
+      data.albums.forEach(album => {
+        album.photos.forEach(photo => {
           // Get bigger url
           const urls = photo.urls.sort((a,b) => {
             return b.width - a.width;
           });
 
-          return this.create('iron-image', {
+          this._photos.push(this.create('iron-image', {
             src: urls[0].url,
             sizing: 'contain',
             preload: true
-          });
+          }));
         });
       });
 

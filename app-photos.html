@@ -6,11 +6,11 @@
 <link rel="import" href="page-switch.html">
 
 <!--
-`app-photos-editor`
+`app-photos`
 
-@demo demo/app-photos-editor.html 
+@demo demo/app-photos.html 
 -->
-<dom-module id="app-photos-editor">
+<dom-module id="app-photos">
   <template>
     <style>
     </style>
@@ -39,7 +39,7 @@
 
   Polymer({
 
-    is: 'app-photos-editor',
+    is: 'app-photos',
 
     properties: {
 
@@ -76,7 +76,7 @@
       this.fire('content-update', {
         data: this.data,
         contentId: this.contentId,
-        updateRelease: false
+        updateRelease: true
       });
     }
 

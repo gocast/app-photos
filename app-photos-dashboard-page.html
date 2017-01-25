@@ -1,11 +1,11 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../fluid-grid/fluid-grid.html">
 <link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="app-photos-new-album-overlay.html">
-<link rel="import" href="fluid-grid.html">
 
 <!--
 `app-photos-dashboard-page`
@@ -91,7 +91,7 @@
 
       <div class="header-layout__content">
         <div class="albums">
-          <fluid-grid id="fluidGrid" item-selector=".album" min-width="420px" margin-width="5px" visible="[[visible]]">
+          <fluid-grid id="fluidGrid" item-selector=".album" min-width="382px" margin-width="5px" visible="[[visible]]">
             <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeat(data.albums, visible)]]" as="album">
               <a href$="#/album/[[album.title]]" class="album">
                 <iron-image class="album__iron-image" src="[[_computeAlbumImageSrc(album.photos)]]" sizing="cover"></iron-image>
@@ -158,6 +158,10 @@
         this.push('data.albums', event.detail);
         this.$.domRepeat.render();
         this._newAlbumOverlay.opened = false;
+
+        window.history.pushState({}, null, `#/album/${event.detail.title}`);
+        window.dispatchEvent(new CustomEvent('location-changed'));
+
         this.fire('trigger-update');
       });
     },

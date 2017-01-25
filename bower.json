@@ -7,14 +7,14 @@
     "overlay-container": "git@github.com:sharedlabs/overlay-container.git",
     "touch-slider": "git@github.com:sharedlabs/touch-slider.git",
     "selectable-item": "git@github.com:sharedlabs/selectable-item.git",
+    "fluid-grid": "git@github.com:sharedlabs/fluid-grid.git",
     "input-file": "git@github.com:sharedlabs/input-file.git",
     "iron-image": "PolymerElements/iron-image#^1.2.5",
     "paper-spinner": "PolymerElements/paper-spinner#^1.2.1",
     "goc-icons": "git@github.com:gocast/goc-icons.git",
     "goc-styles": "git@github.com:gocast/goc-styles.git",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
-    "app-route": "PolymerElements/app-route#^0.9.3",
-    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.5"
+    "app-route": "PolymerElements/app-route#^0.9.3"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
