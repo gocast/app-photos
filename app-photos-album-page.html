@@ -16,7 +16,7 @@
 `app-photos-album-page`
 
 
-@demo demo/app-photos-album-page.html 
+@demo demo/app-photos-album-page.html
 -->
 <dom-module id="app-photos-album-page">
   <template>
@@ -122,7 +122,7 @@
           <div class="missing-well">
             <div class="missing-well__title">El álbum está vacío</div>
           </div>
-        </template>  
+        </template>
       </div>
     </div>
 
@@ -377,10 +377,12 @@
     },
 
     _computedThumbnailUrl(slide) {
-      const urls = slide.urls.sort((a,b) => {
-        return a.width - b.width;
-      });
-      return urls[0].url;
+      if (slide.urls) {
+        const urls = slide.urls.sort((a,b) => {
+          return a.width - b.width;
+        });
+        return urls[0].url;
+      }
     }
 
   });
