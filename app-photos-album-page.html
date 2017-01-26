@@ -86,7 +86,7 @@
             <paper-icon-button icon="dots-vertical" title="More"></paper-icon-button>
 
             <template is="dom-template">
-              <button on-tap="_selectAll">Select all</button>
+              <button on-tap="_selectAll">Seleccionar todo</button>
               <button on-tap="_editAlbumTapped">Editar álbum</button>
               <button on-tap="_deleteAlbumTapped">Eliminar álbum</button>
             </template>
@@ -377,6 +377,7 @@
     },
 
     _computedThumbnailUrl(slide) {
+      // TODO how can this have no urls?
       if (slide.urls) {
         const urls = slide.urls.sort((a,b) => {
           return a.width - b.width;
