@@ -8,12 +8,12 @@
 <link rel="import" href="app-photos-new-album-overlay.html">
 
 <!--
-`app-photos-dashboard-page`
+`app-photos-albums-page`
 
 
-@demo demo/app-photos-dashboard-page.html 
+@demo demo/app-photos-albums-page.html 
 -->
-<dom-module id="app-photos-dashboard-page">
+<dom-module id="app-photos-albums-page">
   <template>
     <style include="header-layout-styles button-styles missing-well-styles">
 
@@ -40,7 +40,7 @@
         box-sizing: border-box;
         color: white;
         cursor: pointer;
-        height: 280px;
+        height: 250px;
         margin: 5px 5px 0 0;
         overflow: hidden;
         position: relative;
@@ -91,7 +91,7 @@
 
       <div class="header-layout__content">
         <div class="albums">
-          <fluid-grid id="fluidGrid" item-selector=".album" min-width="382px" margin-width="5px" visible="[[visible]]">
+          <fluid-grid id="fluidGrid" item-selector=".album" min-width="362px" margin-width="5px" visible="[[visible]]">
             <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeat(data.albums, visible)]]" as="album">
               <a href$="#/album/[[album.title]]" class="album">
                 <iron-image class="album__iron-image" src="[[_computeAlbumImageSrc(album.photos)]]" sizing="cover"></iron-image>
@@ -122,7 +122,7 @@
 
   Polymer({
 
-    is: 'app-photos-dashboard-page',
+    is: 'app-photos-albums-page',
 
     properties: {
 
@@ -155,7 +155,12 @@
           this.set('data.albums', []);
         }
 
-        this.push('data.albums', event.detail);
+        this.push('data.albums', {
+          title: event.detail.title,
+          enabled: true,
+          photos: []
+        });
+
         this.$.domRepeat.render();
         this._newAlbumOverlay.opened = false;
 

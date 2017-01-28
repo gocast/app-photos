@@ -1,9 +1,9 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../app-route/app-location.html">
 <link rel="import" href="../app-route/app-route.html">
-<link rel="import" href="app-photos-dashboard-page.html">
+<link rel="import" href="app-photos-albums-page.html">
 <link rel="import" href="app-photos-album-page.html">
-<link rel="import" href="page-switch.html">
+<link rel="import" href="animated-pages.html">
 
 <!--
 `app-photos`
@@ -13,6 +13,10 @@
 <dom-module id="app-photos">
   <template>
     <style>
+      :host {
+        display: block;
+        height: 100%;
+      }
     </style>
 
     <app-location route="{{route}}" use-hash-as-path></app-location>
@@ -21,14 +25,14 @@
         pattern="/:page"
         data="{{routeData}}"></app-route>
     
-    <page-switch page="[[page]]" default-page="dashboard" route="{{route}}" route-data="{{routeData}}">
-      <app-photos-dashboard-page
-          name="dashboard"
-          content-name="[[contentName]]"
-          data="[[data]]"></app-photos-dashboard-page>
+    <animated-pages page="[[page]]">
+      <app-photos-albums-page
+          name="albums"
+          data="[[data]]"
+          content-name="[[contentName]]"></app-photos-albums-page>
 
       <app-photos-album-page name="album" data="[[data]]"></app-photos-album-page>
-    </page-switch>
+    </animated-pages>
 
   </template>
 </dom-module>
@@ -70,6 +74,24 @@
 
     listeners: {
       'trigger-update': '_updateData'
+    },
+
+    observers: [
+      '_routePageChanged(routeData.page)',
+      '_routePathChanged(route.path)'
+    ],
+
+    _routePageChanged(page) {
+      if (page) {
+        this.page = page;
+      }
+    },
+
+    _routePathChanged(path) {
+      // _routePageChanged is not called when the path is cleared
+      if (!path) {
+        this.page = 'albums';
+      }
     },
 
     _updateData() {

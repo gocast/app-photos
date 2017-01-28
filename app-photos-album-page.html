@@ -87,6 +87,7 @@
 
             <template is="dom-template">
               <button on-tap="_selectAll">Seleccionar todo</button>
+              <button on-tap="_toggleEnableAlbumTapped">Hacer invisible</button>
               <button on-tap="_editAlbumTapped">Editar álbum</button>
               <button on-tap="_deleteAlbumTapped">Eliminar álbum</button>
             </template>
@@ -177,10 +178,10 @@
     _routePageChanged(albumTitle) {
       this.debounce('_routePageChanged', _ => {
         this.albumTitle = albumTitle;
-        if (!this.album) {
-          this._historyPushState('#');
-        }
-      })
+        // if (!this.album) {
+        //   this._historyPushState('#');
+        // }
+      });
     },
 
     _computeAlbum(data, albumTitle) {
@@ -328,9 +329,13 @@
         return;
       }
 
+      const albums = (this.data && this.data.albums) || [];
+      const albumTitles = albums.map(album => album.title);
+
       this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
         opened: true,
         album: this.album,
+        albumTitles: albumTitles,
         onDetach: _ => {
           this._newAlbumOverlay = null;
         }
@@ -352,6 +357,11 @@
         this._historyPushState('#');
         this._saveChanges({inmediate: true});
       }
+    },
+
+    _toggleEnableAlbumTapped() {
+      this.album.enabled = !this.album.enabled;
+      this._saveChanges({inmediate: true});
     },
 
     _historyPushState(url) {

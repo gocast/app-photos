@@ -1,0 +1,106 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="animated-pages">
+  <template>
+    <style>
+      :host {
+        display: block;
+        height: 100%;
+      }
+
+      ::content > :not([visible]) {
+        display: none !important;
+      }
+      
+      ::content > .fix {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 1;
+      }
+    </style>
+
+    <content id="content"></content>
+
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  'use strict';
+
+  Polymer({
+
+    is: 'animated-pages',
+
+    properties: {
+
+      page: {
+        type: String,
+        observer: '_pageChanged'
+      },
+
+      _animation: Object
+
+    },
+
+    attached() {
+      this._pageChanged(this.page);
+    },
+
+    _pageChanged(page, old) {
+      if (!this.isAttached) {
+        return;
+      }
+
+      const pageElement = this.children.namedItem(page);
+      const oldElement = this.children.namedItem(old);
+
+      if (this._animation) {
+        this._animation.finish();
+        this._animation = null;
+      }
+
+      if (pageElement) {
+        pageElement.setAttribute('visible', true);
+      } else {
+        this.fire('page-not-found', {page});
+      }
+
+      this._animatePages(pageElement, oldElement).then(_ => {
+        if (oldElement) {
+          oldElement.removeAttribute('visible');
+        }
+      });
+    },
+
+    _animatePages(pageElement, oldElement) {
+      return new Promise((resolve, reject) => {
+        if (pageElement && oldElement) {
+          document.body.style.overflow = 'hidden';
+          pageElement.classList.add('fix');
+
+          this._animation = pageElement.animate([
+            {opacity: 0},
+            {opacity: 1}
+          ], 100);
+
+          this._animation.onfinish = _ => {
+            pageElement.classList.remove('fix');
+            requestAnimationFrame(_ => {
+              document.body.style.overflow = '';
+            });
+            resolve();
+          };
+        } else {
+          resolve();
+        }
+      });
+    }
+
+  });
+
+}());
+</script>
