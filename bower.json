@@ -14,7 +14,8 @@
     "goc-icons": "git@github.com:gocast/goc-icons.git",
     "goc-styles": "git@github.com:gocast/goc-styles.git",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
-    "app-route": "PolymerElements/app-route#^0.9.3"
+    "app-route": "PolymerElements/app-route#^0.9.3",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#^0.10.1"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

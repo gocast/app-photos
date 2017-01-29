@@ -140,7 +140,10 @@
 
     properties: {
 
-      data: Object,
+      data: {
+        type: Object,
+        notify: true
+      },
 
       albumTitle: String,
 
@@ -360,7 +363,10 @@
     },
 
     _toggleEnableAlbumTapped() {
-      this.album.enabled = !this.album.enabled;
+      const index = this.data.albums.indexOf(this.album);
+      this.set(`data.albums.${index}.enabled`, !this.album.enabled);
+      console.log(this.data)
+      // this.album.enabled = !this.album.enabled;
       this._saveChanges({inmediate: true});
     },
 

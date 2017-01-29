@@ -3,6 +3,7 @@
 <link rel="import" href="../goc-styles/goc-styles.html">
 <link rel="import" href="../fluid-grid/fluid-grid.html">
 <link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="app-photos-new-album-overlay.html">
@@ -10,13 +11,11 @@
 <!--
 `app-photos-albums-page`
 
-
 @demo demo/app-photos-albums-page.html 
 -->
 <dom-module id="app-photos-albums-page">
   <template>
     <style include="header-layout-styles button-styles missing-well-styles">
-
       :host {
         background: var(--goc-background-color);
         display: block;
@@ -36,7 +35,7 @@
 
       .album {
         @apply(--unselectable);
-        background-color: var(--paper-grey-350);
+        background-color: var(--paper-grey-500);
         box-sizing: border-box;
         color: white;
         cursor: pointer;
@@ -52,10 +51,15 @@
         width: 100%;
       }
 
+      .album__iron-image--disabled {
+        filter: grayscale(100%);
+        opacity: 0.6;
+      }
+
       .album__detail {
-        position: absolute;
         bottom: 24px;
         left: 24px;
+        position: absolute;
         right: 24px;
       }
 
@@ -74,6 +78,12 @@
         position: absolute;
         width: 100%;
       }
+
+      .album__more-button {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+      }
     </style>
 
     <div class="header-layout">
@@ -82,10 +92,10 @@
           <paper-icon-button icon="arrow-back" on-tap="_arrowBackTapped" title="Back"></paper-icon-button>
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[contentName]]</div>
-            <div class="header-toolbar__subtitle">Fotos</div>
+            <div class="header-toolbar__subtitle">[[localize('AlbumsPage.Header.Subtitle')]]</div>
           </div>
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
-          <button class="button" on-tap="_createAlbumTapped">Crear albúm</button>
+          <button class="button" on-tap="_createAlbumTapped">[[localize('AlbumsPage.Header.CreateAlbum')]]</button>
         </div>
       </div>
 
@@ -98,8 +108,18 @@
                 <div class="album__gradient"></div>
                 <div class="album__detail">
                   <div class="album__title">[[album.title]]</div>
-                  <div>[[_computePhotosLength(album.photos)]]</div>
+                  <div>[[_computeAlbumSubtitle(album.photos, album.enabled)]]</div>
                 </div>
+
+                <dropdown-menu-container class="album__more-button">
+                  <paper-icon-button icon="dots-vertical" title="More"></paper-icon-button>
+
+                  <template is="dom-template">
+                    <button index$="[[index]]" on-tap="_toggleEnableAlbumTapped">Hacer invisible</button>
+                    <button index$="[[index]]" on-tap="_editAlbumTapped">Editar álbum</button>
+                    <button index$="[[index]]" on-tap="_deleteAlbumTapped">Eliminar álbum</button>
+                  </template>
+                </dropdown-menu-container>
               </a>
             </template>
           </fluid-grid>
@@ -130,8 +150,21 @@
 
       contentName: String,
 
-      visible: Boolean
+      visible: Boolean,
 
+      language: {
+        type: String,
+        value: 'en'
+      }
+
+    },
+
+    behaviors: [
+      Polymer.AppLocalizeBehavior
+    ],
+
+    attached() {
+      this.loadResources(this.resolveUrl(`locales/app-${this.language}.json`));
     },
 
     _createAlbumTapped() {
@@ -164,6 +197,7 @@
         this.$.domRepeat.render();
         this._newAlbumOverlay.opened = false;
 
+        // TODO => meter esto cuando se cierra la animación
         window.history.pushState({}, null, `#/album/${event.detail.title}`);
         window.dispatchEvent(new CustomEvent('location-changed'));
 
@@ -171,7 +205,21 @@
       });
     },
 
+    _arrowBackTapped() {
+      this.fire('close-app');
+    },
+
+    _toggleEnableAlbumTapped(event) {
+      const index = Number(event.currentTarget.getAttribute('index'));
+      const model = this.$.domRepeat._instances[index];
+      const enabled = this.data.albums[index].enabled;
+
+      model.set('album.enabled', !model.__data__.album.enabled);
+      this.data.albums[index].enabled = !enabled;
+    },
+
     _computedDomRepeat(albums, visible) {
+      console.log('repaint dom-repeat')
       if (visible) {
         return albums;
       }
@@ -188,14 +236,20 @@
       }
     },
 
-    _computePhotosLength(photos) {
-      if (photos && photos.length) {
-        return photos.length + ' fotos';
-      }
-    },
+    _computeAlbumSubtitle(photos, enabled) {
+      let text = '';
 
-    _arrowBackTapped() {
-      this.fire('close-app');
+      if (photos && photos.length) {
+        text += photos.length + ' fotos';
+      } else {
+        text += 'Empty';
+      }
+
+      if (typeof enabled === 'boolean' && !enabled) {
+        text += '  ·  Disabled';
+      }
+
+      return text;
     }
 
   });
