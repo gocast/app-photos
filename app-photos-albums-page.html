@@ -272,7 +272,7 @@
 
     _computeAlbumImageClass(enabled) {
       let classAttr = 'album__iron-image';
-      if (!enabled) {
+      if (enabled === false) {
         classAttr += ' album__iron-image--disabled';
       }
       return classAttr;
