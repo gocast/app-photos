@@ -126,7 +126,7 @@
       </div>
 
       <div class="header-layout__content">
-        <template is="dom-if" if="[[!album.enabled]]">
+        <template is="dom-if" if="[[_computeIsDisabled(album.enabled)]]">
          <div class="disabled-message">[[localize('AlbumPage.DisabledMessage')]]</div>
         </template>
         <fluid-grid item-selector=".photo" container-selector="selectable-group" min-width="160px" margin-width="4px" visible="[[visible]]" auto-height>
@@ -354,6 +354,10 @@
           return a.width - b.width;
         })[0].url;
       }
+    },
+
+    _computeIsDisabled(enabled) {
+      return enabled === false;
     },
     
     // File upload
