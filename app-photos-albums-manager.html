@@ -1,0 +1,68 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="app-photos-new-album-overlay.html">
+
+<script>
+(function() {
+  'use strict';
+
+  Polymer({
+
+    is: 'app-photos-albums-manager',
+
+    properties: {
+
+      data: {
+        type: Object,
+        value: _ => {
+          return {albums: []};
+        }
+      },
+
+      _newAlbumOverlay: Object
+
+    },
+
+    createAlbum() {
+      if (this._newAlbumOverlay) {
+        return;
+      }
+
+      this.data.albums = this.data.albums || [];
+      const albumTitles = this.data.albums.map(album => album.title);
+
+      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
+        opened: true,
+        albumTitles: albumTitles,
+        onDetach: _ => {
+          this._newAlbumOverlay = null;
+        }
+      });
+
+      this._newAlbumOverlay.addEventListener('overlay-close-animation-finish', event => {
+        if (!event.currentTarget.canceled) {
+          const title = event.currentTarget.$.titleInput.value;
+
+          this.push('data.albums', {
+            title,
+            enabled: true,
+            photos: []
+          });
+
+          window.history.pushState({}, null, `#/album/${title}`);
+          window.dispatchEvent(new CustomEvent('location-changed'));
+          this.fire('trigger-update');
+        }
+      });
+    },
+
+    editAlbum(album) {
+      console.log(album)
+    },
+
+    deleteAlbum(album) {
+    }
+
+  });
+
+}());
+</script>

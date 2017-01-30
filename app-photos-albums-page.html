@@ -6,7 +6,7 @@
 <link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="app-photos-new-album-overlay.html">
+<link rel="import" href="app-photos-albums-manager.html">
 
 <!--
 `app-photos-albums-page`
@@ -86,6 +86,8 @@
       }
     </style>
 
+    <app-photos-albums-manager data="{{data}}" id="albumsManager"></app-photos-albums-manager>
+
     <div class="header-layout">
       <div class="header-layout__header">
         <div class="header-toolbar">
@@ -146,7 +148,12 @@
 
     properties: {
 
-      data: Object,
+      data: {
+        type: Object,
+        value: _ => {
+          return {};
+        }
+      },
 
       contentName: String,
 
@@ -168,54 +175,36 @@
     },
 
     _createAlbumTapped() {
-      if (this._newAlbumOverlay) {
-        return;
-      }
+      this.$.albumsManager.createAlbum();
+    },
 
-      const albums = (this.data && this.data.albums) || [];
-      const albumTitles = albums.map(album => album.title);
+    _toggleEnableAlbumTapped(event) {
+      const album = this._getAlbumFromDropdownItem(event.currentTarget);
+      album.enabled = !album.enabled;
 
-      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
-        opened: true,
-        albumTitles: albumTitles,
-        onDetach: _ => {
-          this._newAlbumOverlay = null;
-        }
-      });
+      // Update model
+      const index = Number(event.currentTarget.getAttribute('index'));
+      const model = this.$.domRepeat._instances[index];
+      model.set('album.enabled', album.enabled);
+    },
 
-      this._newAlbumOverlay.addEventListener('submit', event => {
-        if (!this.data.albums) {
-          this.set('data.albums', []);
-        }
+    _editAlbumTapped(event) {
+      const album = this._getAlbumFromDropdownItem(event.currentTarget);
+      this.$.albumsManager.editAlbum(album);
+    },
 
-        this.push('data.albums', {
-          title: event.detail.title,
-          enabled: true,
-          photos: []
-        });
+    _deleteAlbumTapped() {
+      const album = this._getAlbumFromDropdownItem(event.currentTarget);
+      this.$.albumsManager.editAlbum(album);
+    },
 
-        this.$.domRepeat.render();
-        this._newAlbumOverlay.opened = false;
-
-        // TODO => meter esto cuando se cierra la animación
-        window.history.pushState({}, null, `#/album/${event.detail.title}`);
-        window.dispatchEvent(new CustomEvent('location-changed'));
-
-        this.fire('trigger-update');
-      });
+    _getAlbumFromDropdownItem(item) {
+      const index = Number(item.getAttribute('index'));
+      return this.data.albums[index];
     },
 
     _arrowBackTapped() {
       this.fire('close-app');
-    },
-
-    _toggleEnableAlbumTapped(event) {
-      const index = Number(event.currentTarget.getAttribute('index'));
-      const model = this.$.domRepeat._instances[index];
-      const enabled = this.data.albums[index].enabled;
-
-      model.set('album.enabled', !model.__data__.album.enabled);
-      this.data.albums[index].enabled = !enabled;
     },
 
     _computedDomRepeat(albums, visible) {

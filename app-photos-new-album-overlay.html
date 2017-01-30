@@ -96,7 +96,8 @@
 
     _submit() {
       if (this._validate()) {
-        this.fire('submit', {title: this.$.titleInput.value});
+        this._setCanceled(false);
+        this.opened = false;
       }
     },
 
@@ -113,6 +114,7 @@
     },
 
     _closeTapped() {
+      this._setCanceled(true);
       this.opened = false;
     }
 
