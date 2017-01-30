@@ -1,15 +1,16 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../app-route/app-location.html">
 <link rel="import" href="../app-route/app-route.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
 <link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../input-file/input-file.html">
 <link rel="import" href="../dropdown-menu/dropdown-menu-container.html">
-<link rel="import" href="../fluid-grid/fluid-grid.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../selectable-item/selectable-group.html">
+<link rel="import" href="../fluid-grid/fluid-grid.html">
 <link rel="import" href="app-photos-new-album-overlay.html">
 
 <!--
@@ -34,6 +35,18 @@
 
       #inputFile {
         display: none;
+      }
+
+      .disabled-message {
+        background: var(--paper-grey-300);
+        border-radius: 4px;
+        box-sizing: border-box;
+        color: var(--paper-grey-600);
+        font-size: 14px;
+        font-weight: bold;
+        margin: 10px 10px 6px 10px;
+        padding: 10px 20px;
+        text-align: center;
       }
 
       fluid-grid {
@@ -73,44 +86,56 @@
       <div class="header-layout__header">
         <div class="header-toolbar">
          <a href="#">
-            <paper-icon-button icon="arrow-back" title="Back"></paper-icon-button>
+            <paper-icon-button icon="arrow-back"></paper-icon-button>
           </a>
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[album.title]]</div>
-            <!--<div class="header-toolbar__subtitle">[[_computeAlbumLength(album.photos)]]</div>-->
+            <div class="header-toolbar__subtitle">
+              [[_computeAlbumLengthText(album.photos.length, localize, visible)]]
+              [[_computeAlbumEnabledText(album.enabled, localize)]]
+            </div>
           </div>
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
-          <paper-icon-button icon="add-photo" on-tap="_selectFilesTapped" title="Add photos"></paper-icon-button>
+          <paper-icon-button icon="add-photo" on-tap="_selectFilesTapped" title="[['AlbumPage.Header.UploadPhotos.AriaLabel']]"></paper-icon-button>
 
           <dropdown-menu-container>
-            <paper-icon-button icon="dots-vertical" title="More"></paper-icon-button>
+            <paper-icon-button icon="dots-vertical" title="[[localize('AlbumMenu.AriaLabel')]]"></paper-icon-button>
 
             <template is="dom-template">
-              <button on-tap="_selectAll">Seleccionar todo</button>
-              <button on-tap="_toggleEnableAlbumTapped">Hacer invisible</button>
-              <button on-tap="_editAlbumTapped">Editar álbum</button>
-              <button on-tap="_deleteAlbumTapped">Eliminar álbum</button>
+              <button on-tap="_selectAll">[[localize('AlbumPage.MoreMenu.SelectAll')]]</button>
+              <button on-tap="_toggleEnableAlbumTapped">[[_computeToggleAlbumText(album.enabled)]]</button>
+              <button on-tap="_editAlbumTapped">[[localize('AlbumMenu.Edit')]]</button>
+              <button on-tap="_deleteAlbumTapped">[[localize('AlbumMenu.Delete')]]</button>
             </template>
           </dropdown-menu-container>
         </div>
 
         <div class$="[[_computeSecondaryToolbarClass(activeSelection)]]">
-          <paper-icon-button icon="close" on-tap="_cancelSelection" title="Cancel selection"></paper-icon-button>
+          <paper-icon-button
+              icon="close"
+              on-tap="_cancelSelection"
+              title="[[localize('AlbumPage.SelectionToolbar.CancelSelection')]]"></paper-icon-button>
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[selection.length]]</div>
           </div>
-          <paper-icon-button icon="delete" on-tap="_removeSelectionTapped" title="Remove selected images"></paper-icon-button>
+          <paper-icon-button
+              icon="delete"
+              on-tap="_removeSelectionTapped"
+              title="[[localize('AlbumPage.SelectionToolbar.RemoveSelectedPhotos')]]"></paper-icon-button>
         </div>
       </div>
 
       <div class="header-layout__content">
-        <fluid-grid item-selector=".photo" container-selector="selectable-group" min-width="100px" margin-width="4px" visible="[[visible]]" auto-height>
+        <template is="dom-if" if="[[!album.enabled]]">
+         <div class="disabled-message">[[localize('AlbumPage.DisabledMessage')]]</div>
+        </template>
+        <fluid-grid item-selector=".photo" container-selector="selectable-group" min-width="160px" margin-width="4px" visible="[[visible]]" auto-height>
           <selectable-group id="selectableGroup" active-selection="{{activeSelection}}">
-            <template is="dom-repeat" items="[[_computedDomRepeat(album, visible)]]" id="domRepeat">
+            <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeat(album.photos.*)]]" as="photo">
               <selectable-item class="photo">
                 <iron-image
                     class="photo__iron-image"
-                    src="[[_computedThumbnailUrl(item)]]"
+                    src="[[_computedThumbnailUrl(photo.urls)]]"
                     preload
                     sizing="cover"
                     on-error-changed="_imageLoadError"></iron-image>
@@ -121,7 +146,7 @@
 
         <template is="dom-if" if="[[!album.photos.length]]">
           <div class="missing-well">
-            <div class="missing-well__title">El álbum está vacío</div>
+            <div class="missing-well__title">[[localize('AlbumPage.MissingPhotos.Title')]]</div>
           </div>
         </template>
       </div>
@@ -140,17 +165,12 @@
 
     properties: {
 
-      data: {
-        type: Object,
+      albums: {
+        type: Array,
         notify: true
       },
 
-      albumTitle: String,
-
-      album: {
-        type: Object,
-        computed: '_computeAlbum(data, albumTitle)'
-      },
+      album: Object,
 
       activeSelection: {
         type: Boolean,
@@ -158,6 +178,8 @@
       },
 
       visible: Boolean,
+
+      _newAlbumOverlay: Object,
 
       _uploadedFiles: {
         type: Object,
@@ -170,33 +192,44 @@
       _uploadingFiles: {
         type: Number,
         value: 0
+      },
+  
+      language: {
+        type: String,
+        value: 'en'
       }
 
     },
 
-    observers: [
-      '_routePageChanged(routeData.albumTitle)',
+    behaviors: [
+      Polymer.AppLocalizeBehavior
     ],
 
-    _routePageChanged(albumTitle) {
-      this.debounce('_routePageChanged', _ => {
-        this.albumTitle = albumTitle;
-        // if (!this.album) {
-        //   this._historyPushState('#');
-        // }
-      });
+    observers: [
+      '_routePageChanged(routeData.albumTitle, albums.length, visible)',
+    ],
+
+    attached() {
+      this.loadResources(this.resolveUrl('locales/app.json'));
     },
 
-    _computeAlbum(data, albumTitle) {
-      let album;
-
-      if (data && data.albums) {
-        album = data.albums.filter(a => a.title === albumTitle)[0];
-        if (album && !Array.isArray(album.photos)) {
-          album.photos = [];
-        }
+    _routePageChanged(albumTitle) {
+      if (!this.visible) {
+        this.album = {};
+        return;
       }
-      return album;
+
+      if (Array.isArray(this.albums)) {
+        this.album = this.albums.filter(a => {
+          return a.title === albumTitle;
+        })[0];
+      }
+
+      setTimeout(_ => {
+        if (!this.album) {
+          this._historyPushState('#');
+        }
+      }, 10);
     },
 
     _selectAll() {
@@ -214,6 +247,115 @@
     _selectFilesTapped() {
       this.$.inputFile.selectFiles();
     },
+
+    _computeSecondaryToolbarClass(activeSelection) {
+      let classAttr = 'header-toolbar header-toolbar--secondary';
+      if (activeSelection) {
+        classAttr += ' header-toolbar--active';
+      }
+      return classAttr;
+    },
+
+    _removeSelectionTapped() {
+      requestAnimationFrame(_ => {
+        const selection = this.$.selectableGroup.selection;
+        this._cancelSelection();
+
+        selection.forEach(el => {
+          const album = this.$.domRepeat.itemForElement(el);
+          this.splice('album.photos', this.album.photos.indexOf(album), 1);
+        });
+
+        this.$.domRepeat.render();
+        this._triggerUpdate({inmediate: true});
+      });
+    },
+
+    _toggleEnableAlbumTapped(event) {
+      this.set('album.enabled', this.album.enabled === false ? true : false);
+    },
+
+    _editAlbumTapped(event) {
+      if (this._newAlbumOverlay) {
+        return;
+      }
+
+      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
+        opened: true,
+        albums: this.albums,
+        album: this.album,
+        language: this.language,
+        onDetach: _ => {
+          this._newAlbumOverlay = null;
+        }
+      });
+
+      this._newAlbumOverlay.addEventListener('overlay-closed', event => {
+        if (!event.currentTarget.canceled) {
+          const title = event.currentTarget.$.titleInput.value;
+          this.set('album.title', title);
+          this._triggerUpdate({inmediate: true});
+        }
+      });
+    },
+
+    _deleteAlbumTapped(event) {
+      if (confirm('Delete this album?')) {
+        this.splice('albums', this.albums.indexOf(this.album), 1);
+        this._triggerUpdate({inmediate: true});
+      }
+    },
+
+    _triggerUpdate({inmediate=false} = {}) {
+      if (inmediate) {
+        this.cancelDebouncer('save-changes');
+        this.fire('trigger-update');
+      } else {
+        this.debounce('save-changes', _ => {
+          this.fire('trigger-update');
+        }, 4000);
+      }
+    },
+
+    _historyPushState(url) {
+      window.history.pushState({}, null, url);
+      window.dispatchEvent(new CustomEvent('location-changed'));
+    },
+
+    _computedDomRepeat(albumChanges) {
+      if (this.album && this.album.photos && this.album.photos.length) {
+        return this.album.photos;
+      }
+      return [];
+    },
+
+    _computeAlbumLengthText(photosLength) {
+      photosLength = photosLength || 0;
+      return this.localize('AlbumDetails.PhotosLength', 'length', String(photosLength));
+    },
+
+    _computeAlbumEnabledText(enabled) {
+      if (enabled === false) {
+        return ' · ' + this.localize('AlbumDetails.Disabled');
+      }
+    },
+
+    _computeToggleAlbumText(enabled) {
+      if (enabled === false) {
+        return this.localize('AlbumMenu.Enable');
+      }
+      return this.localize('AlbumMenu.Disable');
+    },
+
+    _computedThumbnailUrl(urls) {
+      if (urls) {
+        return urls.sort((a,b) => {
+          return a.width - b.width;
+        })[0].url;
+      }
+    },
+    
+    // File upload
 
     _onFilesSelected(event) {
       const files = event.detail.files;
@@ -242,7 +384,7 @@
 
               // save inmediately every 3 at least
               // and every single one let the debounce be
-              this._saveChanges({
+              this._triggerUpdate({
                 inmediate: this._uploadingFiles % 3 === 0
               });
             });
@@ -294,113 +436,6 @@
         }
       }
     },
-
-    _computeSecondaryToolbarClass(activeSelection) {
-      let classAttr = 'header-toolbar header-toolbar--secondary';
-      if (activeSelection) {
-        classAttr += ' header-toolbar--active';
-      }
-      return classAttr;
-    },
-
-    _removeSelectionTapped() {
-      requestAnimationFrame(_ => {
-        const selection = this.$.selectableGroup.selection;
-        this._cancelSelection();
-
-        selection.forEach(el => {
-          const itemModel = this.$.domRepeat.itemForElement(el);
-          this.splice('album.photos', this.album.photos.indexOf(itemModel), 1);
-        });
-
-        this.$.domRepeat.render();
-        this._saveChanges({inmediate: true});
-      });
-    },
-
-    _saveChanges({inmediate=false} = {}) {
-      if (inmediate) {
-        this.cancelDebouncer('save-changes');
-        this._triggerUpdate();
-      } else {
-        this.debounce('save-changes', _ => this._triggerUpdate(), 4000);
-      }
-    },
-
-    _editAlbumTapped() {
-      if (this._newAlbumOverlay) {
-        return;
-      }
-
-      const albums = (this.data && this.data.albums) || [];
-      const albumTitles = albums.map(album => album.title);
-
-      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
-        opened: true,
-        album: this.album,
-        albumTitles: albumTitles,
-        onDetach: _ => {
-          this._newAlbumOverlay = null;
-        }
-      });
-
-      this._newAlbumOverlay.addEventListener('submit', event => {
-        this.set('album.title', event.detail.title);
-        this._newAlbumOverlay.opened = false;
-        this._historyPushState('#/album/' + this.album.title);
-        this._saveChanges({inmediate: true});
-      });
-    },
-
-    _deleteAlbumTapped() {
-      const confirmed = confirm('¿Quieres eliminar el álbum?');
-
-      if (confirmed) {
-        this.splice('data.albums', this.data.albums.indexOf(this.album), 1);
-        this._historyPushState('#');
-        this._saveChanges({inmediate: true});
-      }
-    },
-
-    _toggleEnableAlbumTapped() {
-      const index = this.data.albums.indexOf(this.album);
-      this.set(`data.albums.${index}.enabled`, !this.album.enabled);
-      console.log(this.data)
-      // this.album.enabled = !this.album.enabled;
-      this._saveChanges({inmediate: true});
-    },
-
-    _historyPushState(url) {
-      window.history.pushState({}, null, url);
-      window.dispatchEvent(new CustomEvent('location-changed'));
-    },
-
-    _computedDomRepeat(album, visible) {
-      if (visible) {
-        return album.photos;
-      }
-      return [];
-    },
-
-    // _computeAlbumLength(photos) {
-    //   if (photos) {
-    //     return photos.length + ' fotos';
-    //   }
-    // },
-
-    _triggerUpdate() {
-      this.fire('trigger-update');
-    },
-
-    _computedThumbnailUrl(slide) {
-      // TODO how can this have no urls?
-      if (slide.urls) {
-        const urls = slide.urls.sort((a,b) => {
-          return a.width - b.width;
-        });
-        return urls[0].url;
-      }
-    }
 
   });
 

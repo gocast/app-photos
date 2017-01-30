@@ -83,6 +83,9 @@
       // Create iron images
       this._photos = [];
       data.albums.forEach(album => {
+        if (album.enabled === false) {
+          return;
+        }
         album.photos.forEach(photo => {
           // Get bigger url
           const urls = photo.urls.sort((a,b) => {

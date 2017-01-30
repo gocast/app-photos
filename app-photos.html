@@ -30,11 +30,13 @@
           name="albums"
           albums="{{data.albums}}"
           content-name="[[contentName]]"
+          language="[[language]]"
           loading="{{loading}}"></app-photos-albums-page>
 
       <app-photos-album-page
           name="album"
           albums="{{data.albums}}"
+          language="[[language]]"
           loading="{{loading}}"></app-photos-album-page>
     </animated-pages>
 
@@ -55,7 +57,7 @@
         type: Object,
         observer: '_dataChanged',
         value: _ => {
-          return {albums: [{title:'hola', photos: [{urls: []}]}]};
+          return {albums: []};
         }
       },
 
@@ -75,7 +77,12 @@
 
       page: String,
 
-      loading: Boolean
+      loading: Boolean,
+
+      language: {
+        type: String,
+        value: 'en'
+      }
 
     },
 

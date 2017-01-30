@@ -2,6 +2,7 @@
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
 <link rel="import" href="../overlay-container/animated-overlay-behavior.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 
 <!--
@@ -28,21 +29,21 @@
         <div class="header-toolbar">
           <paper-icon-button on-tap="_closeTapped" icon="close"></paper-icon-button>
           <div class="header-toolbar__main-content">
-            <div class="header-toolbar__title">Crear álbum</div>
+            <div class="header-toolbar__title">[[_computeHeaderTitle(album, localize)]]</div>
           </div>
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
-          <button class="button" on-tap="_submit">Crear</button>
+          <button class="button" on-tap="_submit">[[_computeHeaderSubmit(album, localize)]]</button>
         </div>
       </div>
 
       <div class="header-layout__content">
         <div class="form">
           <div class="form__item form__item--last">
-            <label class="form__label">Nombre del álbum</label>
+            <label class="form__label">[[localize('NewAlbumOverlay.Form.TitleLabel')]]</label>
             <input
                 id="titleInput"
                 class="form__input"
-                placeholder="Nombre del álbum"
+                placeholder="[[localize('NewAlbumOverlay.Form.TitleLabel')]]"
                 value$="[[album.title]]"
                 on-keyup="_validate">
           </div>
@@ -65,17 +66,30 @@
 
       albums: Array,
 
-      album: Object
+      album: {
+        type: Object,
+        value: null
+      },
+
+      language: {
+        type: String,
+        value: 'en'
+      }
 
     },
 
     behaviors: [
-      AnimatedOverlayBehavior
+      AnimatedOverlayBehavior,
+      Polymer.AppLocalizeBehavior
     ],
 
     listeners: {
       'overlay-open-animation-finish': '_onOverlayOpenAnimationFinish',
       'keydown': '_onKeydown'
+    },
+
+    attached() {
+      this.loadResources(this.resolveUrl('locales/app.json'));
     },
 
     _albumsChanged() {
@@ -123,6 +137,20 @@
     _closeTapped() {
       this._setCanceled(true);
       this.opened = false;
+    },
+
+    _computeHeaderTitle(album) {
+      if (album) {
+        return this.localize('NewAlbumOverlay.Header.EditTitle');
+      }
+      return this.localize('NewAlbumOverlay.Header.CreateTitle');
+    },
+
+    _computeHeaderSubmit(album) {
+      if (album) {
+        return this.localize('NewAlbumOverlay.Header.SubmitEdit');
+      }
+      return this.localize('NewAlbumOverlay.Header.SubmitCreate');      
     }
 
   });

@@ -53,7 +53,7 @@
 
       .album__iron-image--disabled {
         filter: grayscale(100%);
-        opacity: 0.6;
+        opacity: 0.4;
       }
 
       .album__detail {
@@ -111,7 +111,7 @@
                     src="[[_computeAlbumImageSrc(album.photos.0)]]"
                     sizing="cover"></iron-image>
 
-                <div class="album__gradient"></div>
+                <div class="album__gradient" hidden$="[[!album.photos.length]]"></div>
                 <div class="album__detail">
                   <div class="album__title">[[album.title]]</div>
                   <div>
@@ -173,7 +173,7 @@
     ],
 
     attached() {
-      this.loadResources(this.resolveUrl(`locales/app-${this.language}.json`));
+      this.loadResources(this.resolveUrl('locales/app.json'));
     },
 
     _createAlbumTapped() {
@@ -184,6 +184,7 @@
       this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
         opened: true,
         albums: this.albums,
+        language: this.language,
         onDetach: _ => {
           this._newAlbumOverlay = null;
         }
@@ -227,7 +228,7 @@
       this._newAlbumOverlay.addEventListener('overlay-closed', event => {
         if (!event.currentTarget.canceled) {
           const title = event.currentTarget.$.titleInput.value;
-          album.title = title;
+          this.set(`albums.${index}.title`, title);
 
           // Update model
           const model = this.$.domRepeat._instances[index];
@@ -242,6 +243,7 @@
       if (confirm('Delete this album?')) {
         const index = Number(event.currentTarget.getAttribute('index'));
         this.splice('albums', index, 1);
+        this.$.domRepeat.render();
         this.fire('trigger-update');
       }
     },
@@ -277,16 +279,16 @@
 
     _computeAlbumEnabledText(enabled) {
       if (enabled === false) {
-        return ' · ' + this.localize('AlbumsPage.AlbumDetails.Disabled');
+        return ' · ' + this.localize('AlbumDetails.Disabled');
       }
     },
 
     _computeAlbumLengthText(photos) {
       if (photos && photos.length) {
-        return this.localize('AlbumsPage.AlbumDetails.PhotosLength', 'length', photos.length);
+        return this.localize('AlbumDetails.PhotosLength', 'length', photos.length);
       }
 
-      return this.localize('AlbumsPage.AlbumDetails.Empty');
+      return this.localize('AlbumDetails.Empty');
     },
 
     _computeToggleAlbumText(enabled) {
