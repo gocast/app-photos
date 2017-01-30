@@ -400,7 +400,7 @@
 
     _imageLoadError(event) {
       if (event.detail.value) {
-        const item = event.model.item;
+        const item = event.model.photo;
         const urls = item.urls;
         if (urls) {
           const original = urls.find(item => {
