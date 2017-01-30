@@ -256,6 +256,7 @@
       // Update model
       const model = this.$.domRepeat._instances[index];
       model.set('album.enabled', album.enabled);
+      this.fire('trigger-update');
     },
 
     _arrowBackTapped() {

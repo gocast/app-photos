@@ -273,6 +273,7 @@
 
     _toggleEnableAlbumTapped(event) {
       this.set('album.enabled', this.album.enabled === false ? true : false);
+      this._triggerUpdate({inmediate: true});
     },
 
     _editAlbumTapped(event) {
