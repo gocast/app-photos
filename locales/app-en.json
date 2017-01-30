@@ -1,6 +1,15 @@
 {
   "en": {
     "AlbumsPage.Header.Subtitle": "Photos",
-    "AlbumsPage.Header.CreateAlbum": "Create album"
+    "AlbumsPage.Header.CreateAlbum": "Create album",
+    "AlbumsPage.MissingAlbums.Title": "There are no albums",
+    "AlbumsPage.AlbumDetails.PhotosLength": "{length} photos",
+    "AlbumsPage.AlbumDetails.Empty": "Empty",
+    "AlbumsPage.AlbumDetails.Disabled": "Disabled",
+    "AlbumMenu.AriaLabel": "More",
+    "AlbumMenu.Enable": "Enable",
+    "AlbumMenu.Disable": "Disable",
+    "AlbumMenu.Edit": "Edit details",
+    "AlbumMenu.Delete": "Delete album"
   }
 }

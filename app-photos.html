@@ -28,10 +28,14 @@
     <animated-pages page="[[page]]">
       <app-photos-albums-page
           name="albums"
-          data="{{data}}"
-          content-name="[[contentName]]"></app-photos-albums-page>
+          albums="{{data.albums}}"
+          content-name="[[contentName]]"
+          loading="{{loading}}"></app-photos-albums-page>
 
-      <app-photos-album-page name="album" data="{{data}}"></app-photos-album-page>
+      <app-photos-album-page
+          name="album"
+          albums="{{data.albums}}"
+          loading="{{loading}}"></app-photos-album-page>
     </animated-pages>
 
   </template>
@@ -49,8 +53,9 @@
 
       data: {
         type: Object,
+        observer: '_dataChanged',
         value: _ => {
-          return {};
+          return {albums: [{title:'hola', photos: [{urls: []}]}]};
         }
       },
 
@@ -68,12 +73,14 @@
 
       routeData: Object,
 
-      page: String
+      page: String,
+
+      loading: Boolean
 
     },
 
     listeners: {
-      'trigger-update': '_updateData'
+      'trigger-update': '_updateContent'
     },
 
     observers: [
@@ -88,13 +95,25 @@
     },
 
     _routePathChanged(path) {
-      // _routePageChanged is not called when the path is cleared
+      // route.path doesn't fire changes when the path is cleared
       if (!path) {
         this.page = 'albums';
       }
     },
 
-    _updateData() {
+    // Ensure data integrity
+    _dataChanged() {
+      if (!this.data) {
+        this.data = {};
+      }
+
+      if (!this.data.albums) {
+        this.data.albums = [];
+      }
+    },
+
+    _updateContent() {
+      // Should be named update-content
       this.fire('content-update', {
         data: this.data,
         contentId: this.contentId,

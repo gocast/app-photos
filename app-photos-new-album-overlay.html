@@ -63,7 +63,7 @@
 
     properties: {
 
-      albumTitles: Array,
+      albums: Array,
 
       album: Object
 
@@ -78,20 +78,27 @@
       'keydown': '_onKeydown'
     },
 
+    _albumsChanged() {
+      this._albumsTitles
+    },
+
     _validate() {
-      let isValid = true;
+      let valid = true;
 
       const title = this.$.titleInput.value;
-      const isTitleValid = title.length && this.albumTitles.indexOf(title) === -1;
-      isValid = isValid && isTitleValid;
+      const titleValid = title.length && !this.albums.filter(album => {
+        return album.title === title;
+      }).length;
 
-      if (isTitleValid) {
+      valid = valid && titleValid;
+
+      if (titleValid) {
         this.$.titleInput.parentElement.classList.remove('form__item--invalid');
       } else {
         this.$.titleInput.parentElement.classList.add('form__item--invalid');
       }
 
-      return isValid;
+      return valid;
     },
 
     _submit() {

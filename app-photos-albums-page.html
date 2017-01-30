@@ -6,7 +6,7 @@
 <link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="app-photos-albums-manager.html">
+<link rel="import" href="app-photos-new-album-overlay.html">
 
 <!--
 `app-photos-albums-page`
@@ -86,7 +86,7 @@
       }
     </style>
 
-    <app-photos-albums-manager data="{{data}}" id="albumsManager"></app-photos-albums-manager>
+    <app-photos-albums-manager albums="{{albums}}" id="albumsManager"></app-photos-albums-manager>
 
     <div class="header-layout">
       <div class="header-layout__header">
@@ -104,22 +104,29 @@
       <div class="header-layout__content">
         <div class="albums">
           <fluid-grid id="fluidGrid" item-selector=".album" min-width="362px" margin-width="5px" visible="[[visible]]">
-            <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeat(data.albums, visible)]]" as="album">
+            <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeat(albums.*, visible)]]" as="album">
               <a href$="#/album/[[album.title]]" class="album">
-                <iron-image class="album__iron-image" src="[[_computeAlbumImageSrc(album.photos)]]" sizing="cover"></iron-image>
+                <iron-image
+                    class$="[[_computeAlbumImageClass(album.enabled)]]"
+                    src="[[_computeAlbumImageSrc(album.photos.0)]]"
+                    sizing="cover"></iron-image>
+
                 <div class="album__gradient"></div>
                 <div class="album__detail">
                   <div class="album__title">[[album.title]]</div>
-                  <div>[[_computeAlbumSubtitle(album.photos, album.enabled)]]</div>
+                  <div>
+                    [[_computeAlbumLengthText(album.photos, localize)]]
+                    [[_computeAlbumEnabledText(album.enabled, localize)]]
+                  </div>
                 </div>
 
                 <dropdown-menu-container class="album__more-button">
-                  <paper-icon-button icon="dots-vertical" title="More"></paper-icon-button>
+                  <paper-icon-button icon="dots-vertical" title$="[[localize('AlbumMenu.AriaLabel')]]"></paper-icon-button>
 
                   <template is="dom-template">
-                    <button index$="[[index]]" on-tap="_toggleEnableAlbumTapped">Hacer invisible</button>
-                    <button index$="[[index]]" on-tap="_editAlbumTapped">Editar álbum</button>
-                    <button index$="[[index]]" on-tap="_deleteAlbumTapped">Eliminar álbum</button>
+                    <button index$="[[index]]" on-tap="_toggleEnableAlbumTapped">[[_computeToggleAlbumText(album.enabled)]]</button>
+                    <button index$="[[index]]" on-tap="_editAlbumTapped">[[localize('AlbumMenu.Edit')]]</button>
+                    <button index$="[[index]]" on-tap="_deleteAlbumTapped">[[localize('AlbumMenu.Delete')]]</button>
                   </template>
                 </dropdown-menu-container>
               </a>
@@ -127,9 +134,9 @@
           </fluid-grid>
         </div>
 
-        <template is="dom-if" if="[[!data.albums.length]]">
+        <template is="dom-if" if="[[!albums.length]]">
           <div class="missing-well">
-            <div class="missing-well__title">No hay ningún álbum</div>
+            <div class="missing-well__title">[[localize('AlbumsPage.MissingAlbums.Title')]]</div>
           </div>
         </template>        
       </div>
@@ -148,12 +155,7 @@
 
     properties: {
 
-      data: {
-        type: Object,
-        value: _ => {
-          return {};
-        }
-      },
+      albums: Array,
 
       contentName: String,
 
@@ -175,70 +177,131 @@
     },
 
     _createAlbumTapped() {
-      this.$.albumsManager.createAlbum();
-    },
+      if (this._newAlbumOverlay) {
+        return;
+      }
 
-    _toggleEnableAlbumTapped(event) {
-      const album = this._getAlbumFromDropdownItem(event.currentTarget);
-      album.enabled = !album.enabled;
+      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
+        opened: true,
+        albums: this.albums,
+        onDetach: _ => {
+          this._newAlbumOverlay = null;
+        }
+      });
 
-      // Update model
-      const index = Number(event.currentTarget.getAttribute('index'));
-      const model = this.$.domRepeat._instances[index];
-      model.set('album.enabled', album.enabled);
+      this._newAlbumOverlay.addEventListener('overlay-close-animation-finish', event => {
+        if (!event.currentTarget.canceled) {
+          const title = event.currentTarget.$.titleInput.value;
+
+          window.history.pushState({}, null, `#/album/${title}`);
+          window.dispatchEvent(new CustomEvent('location-changed'));
+
+          this.push('albums', {
+            title,
+            enabled: true,
+            photos: []
+          });
+
+          this.fire('trigger-update');
+        }
+      });
     },
 
     _editAlbumTapped(event) {
-      const album = this._getAlbumFromDropdownItem(event.currentTarget);
-      this.$.albumsManager.editAlbum(album);
+      if (this._newAlbumOverlay) {
+        return;
+      }
+
+      const index = Number(event.currentTarget.getAttribute('index'));
+      const album = this.albums[index];
+
+      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
+        opened: true,
+        albums: this.albums,
+        album: album,
+        onDetach: _ => {
+          this._newAlbumOverlay = null;
+        }
+      });
+
+      this._newAlbumOverlay.addEventListener('overlay-closed', event => {
+        if (!event.currentTarget.canceled) {
+          const title = event.currentTarget.$.titleInput.value;
+          album.title = title;
+
+          // Update model
+          const model = this.$.domRepeat._instances[index];
+          model.set('album.title', album.title);
+
+          this.fire('trigger-update');
+        }
+      });
     },
 
-    _deleteAlbumTapped() {
-      const album = this._getAlbumFromDropdownItem(event.currentTarget);
-      this.$.albumsManager.editAlbum(album);
+    _deleteAlbumTapped(event) {
+      if (confirm('Delete this album?')) {
+        const index = Number(event.currentTarget.getAttribute('index'));
+        this.splice('albums', index, 1);
+        this.fire('trigger-update');
+      }
     },
 
-    _getAlbumFromDropdownItem(item) {
-      const index = Number(item.getAttribute('index'));
-      return this.data.albums[index];
+    _toggleEnableAlbumTapped(event) {
+      const index = Number(event.currentTarget.getAttribute('index'));
+      const album = this.albums[index];
+      album.enabled = album.enabled === false ? true : false;
+
+      // Update model
+      const model = this.$.domRepeat._instances[index];
+      model.set('album.enabled', album.enabled);
     },
 
     _arrowBackTapped() {
       this.fire('close-app');
     },
 
-    _computedDomRepeat(albums, visible) {
-      console.log('repaint dom-repeat')
-      if (visible) {
-        return albums;
+    _computedDomRepeat(albumsChanges, visible) {
+      if (visible && !location.hash.match('album') && this.albums.length) {
+        return this.albums;
       }
       return [];
     },
 
-    _computeAlbumImageSrc(photos) {
-      if (photos && photos.length) {
-        const urls = photos[0].urls.sort((a,b) => {
-          return a.width - b.width;
-        });
+    _computeAlbumImageClass(enabled) {
+      let classAttr = 'album__iron-image';
+      if (!enabled) {
+        classAttr += ' album__iron-image--disabled';
+      }
+      return classAttr;
+    },
 
-        return urls[0].url;
+    _computeAlbumEnabledText(enabled) {
+      if (enabled === false) {
+        return ' · ' + this.localize('AlbumsPage.AlbumDetails.Disabled');
       }
     },
 
-    _computeAlbumSubtitle(photos, enabled) {
-      let text = '';
-
+    _computeAlbumLengthText(photos) {
       if (photos && photos.length) {
-        text += photos.length + ' fotos';
-      } else {
-        text += 'Empty';
+        return this.localize('AlbumsPage.AlbumDetails.PhotosLength', 'length', photos.length);
       }
 
-      if (typeof enabled === 'boolean' && !enabled) {
-        text += '  ·  Disabled';
-      }
+      return this.localize('AlbumsPage.AlbumDetails.Empty');
+    },
 
-      return text;
+    _computeToggleAlbumText(enabled) {
+      if (enabled === false) {
+        return this.localize('AlbumMenu.Enable');
+      }
+      return this.localize('AlbumMenu.Disable');
+    },
+
+    _computeAlbumImageSrc(photo) {
+      if (photo && photo.urls.length) {
+        return photo.urls.sort((a,b) => {
+          return a.width - b.width;
+        })[0].url;
+      }
     }
 
   });
