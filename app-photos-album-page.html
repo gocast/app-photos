@@ -80,7 +80,7 @@
     <input-file
         id="inputFile"
         on-files-selected="_onFilesSelected"
-        on-load="_onLoadFiles"></input-file>
+        on-files-loaded="_onFilesLoaded"></input-file>
 
     <div class="header-layout">
       <div class="header-layout__header">
@@ -361,14 +361,20 @@
     },
     
     // File upload
-
     _onFilesSelected(event) {
       const files = event.detail.files;
+
+      event.detail.thumbnailSizes = [
+        {width: 300, height: 300}
+      ];
+
       this._uploadingFiles = this._uploadingFiles + files.length;
     },
 
-    _onLoadFiles(event) {
+    _onFilesLoaded(event) {
       const files = event.detail.files;
+      console.log(files);
+      return;
 
       // what when there is an error?
       for (let i = 0; i < files.length; i++) {
@@ -376,22 +382,22 @@
 
         const file = files[i];
 
-        if (file.urls) {
+        // Falta guarda en el data el tamaño de la imagen original
+        // Luego
+        if (file.images) {
           const parts = file.name.split('.');
           parts.pop();
           const filename = parts.join('.');
           this._uploadedFiles[filename] = file;
 
-          file.urls.then(urls => {
-            requestIdleCallback(_ => {
-              this.push('album.photos', {urls});
-              this.$.domRepeat.render();
+          requestIdleCallback(_ => {
+            this.push('album.photos', {images: file.images});
+            this.$.domRepeat.render();
 
-              // save inmediately every 3 at least
-              // and every single one let the debounce be
-              this._triggerUpdate({
-                inmediate: this._uploadingFiles % 3 === 0
-              });
+            // save inmediately every 3 at least
+            // and every single one let the debounce be
+            this._triggerUpdate({
+              inmediate: this._uploadingFiles % 3 === 0
             });
           });
         }
@@ -399,6 +405,7 @@
     },
 
     _imageLoadError(event) {
+      return;
       if (event.detail.value) {
         const item = event.model.photo;
         const urls = item.urls;
