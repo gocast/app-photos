@@ -302,7 +302,7 @@
     _computeAlbumImageSrc(photo) {
       if (photo && photo.images.length) {
         return photo.images.sort((a,b) => {
-          return a.width - b.width;
+          return b.width - (a.width || 0);
         })[0].url;
       }
     }
