@@ -300,8 +300,8 @@
     },
 
     _computeAlbumImageSrc(photo) {
-      if (photo && photo.urls.length) {
-        return photo.urls.sort((a,b) => {
+      if (photo && photo.images.length) {
+        return photo.images.sort((a,b) => {
           return a.width - b.width;
         })[0].url;
       }
