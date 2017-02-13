@@ -195,12 +195,13 @@
 
         if (!this.data.albums) {
           this.set('data.albums', []);
-          this._albums = data.albums;
         }
+        this._albums = this.data.albums;
       }
 
       _albumsUpdated() {
         this._albums = this._albums.slice(0);
+        this.data.albums = this._albums;
       }
 
       _toggleListeners({enable}) {

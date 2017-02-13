@@ -152,7 +152,7 @@
           </fluid-grid>
         </div>
 
-        <dom-if if="[[!albums.length]]">
+        <dom-if if="[[_computeMissingWellVisible(loading, albums)]]">
           <template>
             <div class="missing-well">
               <div class="missing-well__title">[[localize('AlbumsPage.MissingAlbums.Title')]]</div>
@@ -327,6 +327,10 @@
             return b.width - (a.width || 0);
           })[0].url;
         }
+      }
+
+      _computeMissingWellVisible(loading, album) {
+        return !loading && album && !album.length;
       }
 
     }
