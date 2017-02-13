@@ -1,4 +1,4 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../app-route/app-location.html">
 <link rel="import" href="../app-route/app-route.html">
 <link rel="import" href="app-photos-albums-page.html">
@@ -8,7 +8,7 @@
 <!--
 `app-photos`
 
-@demo demo/app-photos.html 
+@demo demo/app-photos.html
 -->
 <dom-module id="app-photos">
   <template>
@@ -20,115 +20,209 @@
     </style>
 
     <app-location route="{{route}}" use-hash-as-path></app-location>
+
     <app-route
         route="[[route]]"
         pattern="/:page"
         data="{{routeData}}"></app-route>
-    
+
     <animated-pages page="[[page]]">
       <app-photos-albums-page
           name="albums"
-          albums="{{data.albums}}"
+          albums="{{_albums}}"
           content-name="[[contentName]]"
           language="[[language]]"
+          resources="[[resources]]"
           loading="{{loading}}"></app-photos-albums-page>
 
       <app-photos-album-page
           name="album"
-          albums="{{data.albums}}"
+          albums="{{_albums}}"
           language="[[language]]"
+          resources="[[resources]]"
           loading="{{loading}}"></app-photos-album-page>
     </animated-pages>
-
   </template>
-</dom-module>
 
-<script>
-(function() {
-  'use strict';
+  <script>
 
-  Polymer({
+    class AppPhotos extends Polymer.Element {
 
-    is: 'app-photos',
+      static get is() {return 'app-photos';}
 
-    properties: {
+      static get config() {
+        return {
+          properties: {
 
-      data: {
-        type: Object,
-        observer: '_dataChanged',
-        value: _ => {
-          return {albums: []};
+            data: {
+              type: Object,
+              observer: '_dataChanged',
+              value: _ => {
+                return {albums: []};
+              }
+            },
+
+            _albums: {
+              type: Array,
+              value: _ => []
+            },
+
+            release: Object,
+
+            contentId: Number,
+
+            dataUpdatedAt: Number,
+
+            releaseUpdatedAt: Number,
+
+            contentName: String,
+
+            loading: {
+              type: Boolean,
+              value: false
+            },
+
+            language: {
+              type: String,
+              value: _ => 'en'
+            },
+
+            routeData: Object,
+
+            route: Object,
+
+            resources: {
+              type: Object,
+              value() {
+                return {
+                    // "AlbumsPage.Header.Subtitle": "Albums",
+                  "en": {
+                    "AlbumDetails.Disabled": "Disabled",
+                    "AlbumDetails.Empty": "Empty",
+                    "AlbumDetails.PhotosLength": "{length} photos",
+                    "AlbumMenu.AriaLabel": "More",
+                    "AlbumMenu.Delete": "Delete album",
+                    "AlbumMenu.Disable": "Disable",
+                    "AlbumMenu.Edit": "Edit details",
+                    "AlbumMenu.Enable": "Enable",
+                    "AlbumPage.DisabledMessage": "This album is disabled. These photos won't be displayed.",
+                    "AlbumPage.Header.UploadPhotos.AriaLabel": "Add photos",
+                    "AlbumPage.MissingPhotos.Title": "This album is empty.",
+                    "AlbumPage.MoreMenu.SelectAll": "Select all",
+                    "AlbumPage.SelectionToolbar.CancelSelection": "Cancel selection",
+                    "AlbumPage.SelectionToolbar.RemoveSelectedPhotos": "Remove selected photos",
+                    "AlbumsPage.Header.CreateAlbum": "Create album",
+                    "AlbumsPage.MissingAlbums.Title": "There are no albums.",
+                    "NewAlbumOverlay.Form.TitleLabel": "Album title",
+                    "NewAlbumOverlay.Header.Button.Close": "Close",
+                    "NewAlbumOverlay.Header.CreateTitle": "Create album",
+                    "NewAlbumOverlay.Header.EditTitle": "Edit album",
+                    "NewAlbumOverlay.Header.SubmitCreate": "Create album",
+                    "NewAlbumOverlay.Header.SubmitEdit": "Save",
+                  },
+                    // "AlbumsPage.Header.Subtitle": "Álbums",
+                  "es": {
+                    "AlbumDetails.Disabled": "Desactivado",
+                    "AlbumDetails.Empty": "Vácio",
+                    "AlbumDetails.PhotosLength": "{length} fotos",
+                    "AlbumMenu.AriaLabel": "Más",
+                    "AlbumMenu.Delete": "Eliminar álbum",
+                    "AlbumMenu.Disable": "Desactivar",
+                    "AlbumMenu.Edit": "Editar detalles",
+                    "AlbumMenu.Enable": "Activar",
+                    "AlbumPage.DisabledMessage": "Este álbum esta desactivado. Estas fotos no se mostraran en la presentación.",
+                    "AlbumPage.Header.UploadPhotos.AriaLabel": "Añadir fotos",
+                    "AlbumPage.MissingPhotos.Title": "Este álbum esta vácio.",
+                    "AlbumPage.MoreMenu.SelectAll": "Seleccionar todo",
+                    "AlbumPage.SelectionToolbar.CancelSelection": "Cancelar selección",
+                    "AlbumPage.SelectionToolbar.RemoveSelectedPhotos": "Eliminar fotos seleccionadas",
+                    "AlbumsPage.Header.CreateAlbum": "Crear álbum",
+                    "AlbumsPage.MissingAlbums.Title": "No has creado ningún álbum.",
+                    "NewAlbumOverlay.Form.TitleLabel": "Título del álbum",
+                    "NewAlbumOverlay.Header.Button.Close": "Cerrar",
+                    "NewAlbumOverlay.Header.CreateTitle": "Crear álbum",
+                    "NewAlbumOverlay.Header.EditTitle": "Editar álbum",
+                    "NewAlbumOverlay.Header.SubmitCreate": "Crear álbum",
+                    "NewAlbumOverlay.Header.SubmitEdit": "Guardar",
+                  }
+                };
+              }
+            },
+
+          },
+
+          observers: [
+            '_routePageChanged(routeData.page)',
+            '_routePathChanged(route.path)'
+          ],
+        };
+      }
+
+      constructor() {
+        super();
+        this._updateContent = this._updateContent.bind(this);
+        this._albumsUpdated = this._albumsUpdated.bind(this);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this._toggleListeners({enable: true});
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this._toggleListeners({enable: false});
+      }
+
+      _routePageChanged(page) {
+        if (page) {
+          this.page = page;
         }
-      },
-
-      release: Object,
-
-      contentName: String,
-
-      contentId: Number,
-
-      dataUpdatedAt: Number,
-
-      releaseUpdatedAt: Number,
-
-      route: Object,
-
-      routeData: Object,
-
-      page: String,
-
-      loading: Boolean,
-
-      language: {
-        type: String,
-        value: 'en'
       }
 
-    },
-
-    listeners: {
-      'trigger-update': '_updateContent'
-    },
-
-    observers: [
-      '_routePageChanged(routeData.page)',
-      '_routePathChanged(route.path)'
-    ],
-
-    _routePageChanged(page) {
-      if (page) {
-        this.page = page;
-      }
-    },
-
-    _routePathChanged(path) {
-      // route.path doesn't fire changes when the path is cleared
-      if (!path) {
-        this.page = 'albums';
-      }
-    },
-
-    // Ensure data integrity
-    _dataChanged() {
-      if (!this.data) {
-        this.data = {};
+      _routePathChanged(path) {
+        // route.path doesn't fire changes when the path is cleared
+        if (!path) {
+          this.page = 'albums';
+        }
       }
 
-      if (!this.data.albums) {
-        this.set('data.albums', []);
-      }
-    },
+      // Ensure data integrity
+      _dataChanged() {
+        if (!this.data) {
+          this.data = {};
+        }
 
-    _updateContent() {
-      // Should be named update-content
-      this.fire('content-update', {
-        data: this.data,
-        contentId: this.contentId,
-        updateRelease: true
-      });
+        if (!this.data.albums) {
+          this.set('data.albums', []);
+          this._albums = data.albums;
+        }
+      }
+
+      _albumsUpdated() {
+        this._albums = this._albums.slice(0);
+      }
+
+      _toggleListeners({enable}) {
+        const m = enable ? 'addEventListener' : 'removeEventListener';
+        this[m]('trigger-update', this._updateContent);
+        this[m]('albums-update', this._albumsUpdated);
+      }
+
+      _updateContent() {
+        this.dispatchEvent(new CustomEvent('content-update', {
+          composed: true,
+          detail: {
+            data: this.data,
+            contentId: this.contentId,
+            updateRelease: true,
+          }
+        }));
+      }
+
     }
 
-  });
+    customElements.define(AppPhotos.is, AppPhotos);
 
-}());
-</script>
+  </script>
+</dom-module>

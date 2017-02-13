@@ -1,19 +1,19 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
-<link rel="import" href="../overlay-container/animated-overlay-behavior.html">
-<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../overlay-container/animated-overlay-mixin.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 
 <!--
 `app-photos-new-album-overlay`
 
 
-@demo demo/app-photos-new-album-overlay.html 
+@demo demo/app-photos-new-album-overlay.html
 -->
 <dom-module id="app-photos-new-album-overlay">
   <template>
-    <style include="header-layout-styles button-styles form-styles">
+    <style include="header-layout-styles button-styles form-styles icon-btn-styles">
       :host {
         background: var(--goc-background-color);
         bottom: 0;
@@ -27,12 +27,20 @@
     <div class="header-layout">
       <div class="header-layout__header">
         <div class="header-toolbar">
-          <paper-icon-button on-tap="_closeTapped" icon="close"></paper-icon-button>
+          <button
+              class="icon-btn icon-btn--primary"
+              on-click="_onCloseTapped"
+              title="[[localize('NewAlbumOverlay.Header.Button.Close')]]">
+              <iron-icon icon="close"></iron-icon>
+          </button>
+
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[_computeHeaderTitle(album, localize)]]</div>
           </div>
+
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
-          <button class="button" on-tap="_submit">[[_computeHeaderSubmit(album, localize)]]</button>
+
+          <button class="button" on-click="_onSubmit">[[_computeHeaderSubmit(album, localize)]]</button>
         </div>
       </div>
 
@@ -52,108 +60,115 @@
     </div>
 
   </template>
-</dom-module>
 
-<script>
-(function() {
-  'use strict';
+  <script>
 
-  Polymer({
+    class AppPhotosNewAlbumOverlay extends AnimatedOverlayMixin(AppLocalizeMixin(Polymer.Element)) {
 
-    is: 'app-photos-new-album-overlay',
+      static get is() {return 'app-photos-new-album-overlay';}
 
-    properties: {
+      static get config() {
+        return {
+          properties: {
 
-      albums: Array,
+            albums: Array,
 
-      album: {
-        type: Object,
-        value: null
-      },
+            album: {
+              type: Object,
+              value: null
+            },
 
-      language: {
-        type: String,
-        value: 'en'
+            language: String,
+
+            resources: Object,
+
+          }
+        };
       }
 
-    },
-
-    behaviors: [
-      AnimatedOverlayBehavior,
-      Polymer.AppLocalizeBehavior
-    ],
-
-    listeners: {
-      'overlay-open-animation-finish': '_onOverlayOpenAnimationFinish',
-      'keydown': '_onKeydown'
-    },
-
-    attached() {
-      this.loadResources(this.resolveUrl('locales/app.json'));
-    },
-
-    _albumsChanged() {
-      this._albumsTitles
-    },
-
-    _validate() {
-      let valid = true;
-
-      const title = this.$.titleInput.value;
-      const titleValid = title.length && !this.albums.filter(album => {
-        return album.title === title;
-      }).length;
-
-      valid = valid && titleValid;
-
-      if (titleValid) {
-        this.$.titleInput.parentElement.classList.remove('form__item--invalid');
-      } else {
-        this.$.titleInput.parentElement.classList.add('form__item--invalid');
+      constructor() {
+        super();
+        this._overlayOpenAnimationFinished = this._overlayOpenAnimationFinished.bind(this);
+        this._keydownPressed = this._keydownPressed.bind(this);
       }
 
-      return valid;
-    },
+      connectedCallback() {
+        super.connectedCallback();
+        this._toggleListeners({enable: true});
+      }
 
-    _submit() {
-      if (this._validate()) {
-        this._setCanceled(false);
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this._toggleListeners({enable: false});
+      }
+
+      _albumsChanged() {
+        this._albumsTitles
+      }
+
+      _onSubmit() {
+        if (this._validate()) {
+          this._setCanceled(false);
+          this.opened = false;
+        }
+      }
+
+      _onCloseTapped() {
+        this._setCanceled(true);
         this.opened = false;
       }
-    },
 
-    _onKeydown(event) {
-      const enterKey = 13;
-
-      if (event.keyCode === enterKey) {
-        this._submit();
+      _keydownPressed(event) {
+        const enterKey = 13;
+        if (event.keyCode === enterKey) {
+          this._onSubmit();
+        }
       }
-    },
 
-    _onOverlayOpenAnimationFinish() {
-      this.$.titleInput.focus();
-    },
-
-    _closeTapped() {
-      this._setCanceled(true);
-      this.opened = false;
-    },
-
-    _computeHeaderTitle(album) {
-      if (album) {
-        return this.localize('NewAlbumOverlay.Header.EditTitle');
+      _overlayOpenAnimationFinished() {
+        this.$.titleInput.focus();
       }
-      return this.localize('NewAlbumOverlay.Header.CreateTitle');
-    },
 
-    _computeHeaderSubmit(album) {
-      if (album) {
-        return this.localize('NewAlbumOverlay.Header.SubmitEdit');
+      _validate() {
+        let valid = true;
+        const title = this.$.titleInput.value;
+        const titleValid = title.length && !this.albums.filter(album => {
+          return album.title === title;
+        }).length;
+
+        valid = valid && titleValid;
+
+        if (titleValid) {
+          this.$.titleInput.parentElement.classList.remove('form__item--invalid');
+        } else {
+          this.$.titleInput.parentElement.classList.add('form__item--invalid');
+        }
+        return valid;
       }
-      return this.localize('NewAlbumOverlay.Header.SubmitCreate');      
+
+      _toggleListeners({enable}) {
+        const m = enable ? 'addEventListener' : 'removeEventListener';
+        this[m]('overlay-open-animation-finish', this._overlayOpenAnimationFinished);
+        this[m]('keydown', this._keydownPressed);
+      }
+
+      _computeHeaderTitle(album) {
+        if (album) {
+          return this.localize('NewAlbumOverlay.Header.EditTitle');
+        }
+        return this.localize('NewAlbumOverlay.Header.CreateTitle');
+      }
+
+      _computeHeaderSubmit(album) {
+        if (album) {
+          return this.localize('NewAlbumOverlay.Header.SubmitEdit');
+        }
+        return this.localize('NewAlbumOverlay.Header.SubmitCreate');
+      }
+
     }
 
-  });
+    customElements.define(AppPhotosNewAlbumOverlay.is, AppPhotosNewAlbumOverlay);
 
-}());
-</script>
+  </script>
+</dom-module>

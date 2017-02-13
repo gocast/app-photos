@@ -1,16 +1,18 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
 <link rel="import" href="../app-route/app-location.html">
 <link rel="import" href="../app-route/app-route.html">
-<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../dropdown-menu/dropdown-menu-container.html">
+<link rel="import" href="../fluid-grid/fluid-grid.html">
+<link rel="import" href="../goc-apps/goc-app-icon.html">
+<link rel="import" href="../goc-apps/goc-apps-collection.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
-<link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../input-file/input-file.html">
-<link rel="import" href="../dropdown-menu/dropdown-menu-container.html">
+<link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../selectable-item/selectable-group.html">
-<link rel="import" href="../fluid-grid/fluid-grid.html">
+<link rel="import" href="../offthread-image/offthread-image.html">
 <link rel="import" href="app-photos-new-album-overlay.html">
 
 <!--
@@ -21,11 +23,12 @@
 -->
 <dom-module id="app-photos-album-page">
   <template>
-    <style include="header-layout-styles missing-well-styles">
+    <style include="header-layout-styles missing-well-styles icon-btn-styles">
       :host {
         background: var(--goc-background-color);
-        display: block;
+        /*display: block;*/
         height: 100%;
+        display: none;
       }
 
       .header-layout__content {
@@ -72,6 +75,7 @@
     </style>
 
     <app-location route="{{route}}" use-hash-as-path></app-location>
+
     <app-route
         route="[[route]]"
         pattern="/album/:albumTitle"
@@ -85,9 +89,10 @@
     <div class="header-layout">
       <div class="header-layout__header">
         <div class="header-toolbar">
-         <a href="#">
-            <paper-icon-button icon="arrow-back"></paper-icon-button>
+          <a href="#" class="icon-btn icon-btn--primary">
+              <iron-icon icon="arrow-back"></iron-icon>
           </a>
+
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[album.title]]</div>
             <div class="header-toolbar__subtitle">
@@ -95,340 +100,366 @@
               [[_computeAlbumEnabledText(album.enabled, localize)]]
             </div>
           </div>
+
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
-          <paper-icon-button icon="add-photo" on-tap="_selectFilesTapped" title="[['AlbumPage.Header.UploadPhotos.AriaLabel']]"></paper-icon-button>
+
+          <button
+              class="icon-btn icon-btn--primary"
+              on-click="_onSelectFilesTapped"
+              title="[['AlbumPage.Header.UploadPhotos.AriaLabel']]">
+              <iron-icon icon="add-photo"></iron-icon>
+          </button>
 
           <dropdown-menu-container>
-            <paper-icon-button icon="dots-vertical" title="[[localize('AlbumMenu.AriaLabel')]]"></paper-icon-button>
+            <button
+                class="icon-btn icon-btn--primary"
+                title="[[localize('AlbumMenu.AriaLabel')]]">
+                <iron-icon icon="dots-vertical"></iron-icon>
+            </button>
 
             <template is="dom-template">
-              <button on-tap="_selectAll">[[localize('AlbumPage.MoreMenu.SelectAll')]]</button>
-              <button on-tap="_toggleEnableAlbumTapped">[[_computeToggleAlbumText(album.enabled)]]</button>
-              <button on-tap="_editAlbumTapped">[[localize('AlbumMenu.Edit')]]</button>
-              <button on-tap="_deleteAlbumTapped">[[localize('AlbumMenu.Delete')]]</button>
+              <button on-click="_onSelectAll">[[localize('AlbumPage.MoreMenu.SelectAll')]]</button>
+              <button on-click="_onToggleEnableAlbumTapped">[[_computeToggleAlbumText(album.enabled)]]</button>
+              <button on-click="_onEditAlbumTapped">[[localize('AlbumMenu.Edit')]]</button>
+              <button on-click="_onDeleteAlbumTapped">[[localize('AlbumMenu.Delete')]]</button>
             </template>
           </dropdown-menu-container>
         </div>
 
         <div class$="[[_computeSecondaryToolbarClass(activeSelection)]]">
-          <paper-icon-button
-              icon="close"
-              on-tap="_cancelSelection"
-              title="[[localize('AlbumPage.SelectionToolbar.CancelSelection')]]"></paper-icon-button>
+          <button
+              class="icon-btn icon-btn--primary"
+              on-click="_onCancelSelection"
+              title="[[localize('AlbumPage.SelectionToolbar.CancelSelection')]]">
+              <iron-icon icon="close"></iron-icon>
+          </button>
+
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[selection.length]]</div>
           </div>
-          <paper-icon-button
-              icon="delete"
-              on-tap="_removeSelectionTapped"
-              title="[[localize('AlbumPage.SelectionToolbar.RemoveSelectedPhotos')]]"></paper-icon-button>
+
+          <button
+              class="icon-btn icon-btn--primary"
+              on-click="_onRemoveSelectionTapped"
+              title="[[localize('AlbumPage.SelectionToolbar.RemoveSelectedPhotos')]]">
+              <iron-icon icon="delete"></iron-icon>
+          </button>
         </div>
       </div>
 
       <div class="header-layout__content">
-        <template is="dom-if" if="[[_computeIsDisabled(album.enabled)]]">
-         <div class="disabled-message">[[localize('AlbumPage.DisabledMessage')]]</div>
-        </template>
+        <dom-if if="[[_computeIsDisabled(album.enabled)]]">
+          <template>
+            <div class="disabled-message">[[localize('AlbumPage.DisabledMessage')]]</div>
+          </template>
+        </dom-if>
+
         <fluid-grid item-selector=".photo" container-selector="selectable-group" min-width="160px" margin-width="4px" visible="[[visible]]" auto-height>
           <selectable-group id="selectableGroup" active-selection="{{activeSelection}}">
-            <template id="domRepeat" is="dom-repeat" items="[[_computedDomRepeat(album.photos.*)]]" as="photo">
-              <selectable-item class="photo">
-                <offthread-image
-                    class="photo__iron-image"
-                    src="[[_computedThumbnailUrl(photo.images)]]"
-                    preload
-                    sizing="cover"
-                    on-error="_imageLoadError"></offthread-image>
-              </selectable-item>
-            </template>
+            <dom-repeat id="domRepeat" items="[[_computedDomRepeat(album.photos.*)]]" as="photo">
+              <template>
+                <selectable-item class="photo">
+                  <offthread-image
+                      class="photo__iron-image"
+                      src="[[_computedThumbnailUrl(photo.images)]]"
+                      preload
+                      sizing="cover"
+                      on-error="_imageLoadError"></offthread-image>
+                </selectable-item>
+              </template>
+            </dom-repeat>
           </selectable-group>
         </fluid-grid>
 
-        <template is="dom-if" if="[[!album.photos.length]]">
-          <div class="missing-well">
-            <div class="missing-well__title">[[localize('AlbumPage.MissingPhotos.Title')]]</div>
-          </div>
-        </template>
+        <dom-if if="[[!album.photos.length]]">
+          <template>
+            <div class="missing-well">
+              <div class="missing-well__title">[[localize('AlbumPage.MissingPhotos.Title')]]</div>
+            </div>
+          </template>
+        </dom-if>
       </div>
     </div>
 
   </template>
-</dom-module>
 
-<script>
-(function() {
-  'use strict';
+  <script>
 
-  Polymer({
+    class AppPhotosAlbumPage extends AppLocalizeMixin(Polymer.Element) {
 
-    is: 'app-photos-album-page',
+      static get is() {return 'app-photos-album-page';}
 
-    properties: {
+      static get config() {
+        return {
+          properties: {
 
-      albums: {
-        type: Array,
-        notify: true
-      },
+            albums: {
+              type: Array,
+              notify: true
+            },
 
-      album: Object,
+            album: Object,
 
-      activeSelection: {
-        type: Boolean,
-        value: false
-      },
+            activeSelection: {
+              type: Boolean,
+              value: false
+            },
 
-      visible: Boolean,
+            visible: Boolean,
 
-      _newAlbumOverlay: Object,
+            _uploadedFiles: {
+              type: Object,
+              value: _ => {
+                return {};
+              }
+            },
 
-      _uploadedFiles: {
-        type: Object,
-        value: _ => {
-          return {};
+            // Number of files being uploaded
+            _uploadingFiles: {
+              type: Number,
+              value: 0
+            },
+
+            language: {
+              type: String,
+              value: 'en'
+            },
+
+            resources: Object,
+
+          },
+
+          observers: [
+            '_routePageChanged(routeData.albumTitle, albums, visible)',
+          ],
+
+        };
+      }
+
+      constructor() {
+        super();
+        this._saveChangesTimeout = null;
+        this._newAlbumOverlay = null;
+      }
+
+      _routePageChanged(albumTitle, albums, visible) {
+        if (!albumTitle || !albums || !visible) {return;}
+
+        if (!this.visible) {
+          this.album = {};
+          return;
         }
-      },
 
-      // Number of files being uploaded
-      _uploadingFiles: {
-        type: Number,
-        value: 0
-      },
-  
-      language: {
-        type: String,
-        value: 'en'
-      }
-
-    },
-
-    behaviors: [
-      Polymer.AppLocalizeBehavior
-    ],
-
-    observers: [
-      '_routePageChanged(routeData.albumTitle, albums.length, visible)',
-    ],
-
-    attached() {
-      this.loadResources(this.resolveUrl('locales/app.json'));
-    },
-
-    _routePageChanged(albumTitle) {
-      if (!this.visible) {
-        this.album = {};
-        return;
-      }
-
-      if (Array.isArray(this.albums)) {
-        this.album = this.albums.filter(a => {
+        this.album = (this.albums || []).filter(a => {
           return a.title === albumTitle;
         })[0];
+
+        setTimeout(_ => {
+          if (!this.album) {
+            this._historyPushState('#');
+          }
+        }, 10);
       }
 
-      setTimeout(_ => {
-        if (!this.album) {
-          this._historyPushState('#');
-        }
-      }, 10);
-    },
-
-    _selectAll() {
-      this.$.selectableGroup.items.forEach(item => {
-        item.selected = true;
-      });
-    },
-
-    _cancelSelection() {
-      this.$.selectableGroup.selection.forEach(item => {
-        item.selected = false;
-      });
-    },
-
-    _selectFilesTapped() {
-      this.$.inputFile.selectFiles();
-    },
-
-    _computeSecondaryToolbarClass(activeSelection) {
-      let classAttr = 'header-toolbar header-toolbar--secondary';
-      if (activeSelection) {
-        classAttr += ' header-toolbar--active';
-      }
-      return classAttr;
-    },
-
-    _removeSelectionTapped() {
-      requestAnimationFrame(_ => {
-        const selection = this.$.selectableGroup.selection;
-        this._cancelSelection();
-
-        selection.forEach(el => {
-          const album = this.$.domRepeat.itemForElement(el);
-          this.splice('album.photos', this.album.photos.indexOf(album), 1);
+      _onSelectAll() {
+        this.$.selectableGroup.items.forEach(item => {
+          item.selected = true;
         });
-
-        this.$.domRepeat.render();
-        this._triggerUpdate({inmediate: true});
-      });
-    },
-
-    _toggleEnableAlbumTapped(event) {
-      this.set('album.enabled', this.album.enabled === false ? true : false);
-      this._triggerUpdate({inmediate: true});
-    },
-
-    _editAlbumTapped(event) {
-      if (this._newAlbumOverlay) {
-        return;
       }
 
-      this._newAlbumOverlay = this.create('app-photos-new-album-overlay', {
-        opened: true,
-        albums: this.albums,
-        album: this.album,
-        language: this.language,
-        onDetach: _ => {
-          this._newAlbumOverlay = null;
-        }
-      });
+      _onCancelSelection() {
+        this.$.selectableGroup.selection.forEach(item => {
+          item.selected = false;
+        });
+      }
 
-      this._newAlbumOverlay.addEventListener('overlay-closed', event => {
-        if (!event.currentTarget.canceled) {
-          const title = event.currentTarget.$.titleInput.value;
-          this.set('album.title', title);
+      _onSelectFilesTapped() {
+        this.$.inputFile.selectFiles();
+      }
+
+      _computeSecondaryToolbarClass(activeSelection) {
+        let classAttr = 'header-toolbar header-toolbar--secondary';
+        if (activeSelection) {
+          classAttr += ' header-toolbar--active';
+        }
+        return classAttr;
+      }
+
+      _onRemoveSelectionTapped() {
+        requestAnimationFrame(_ => {
+          const selection = this.$.selectableGroup.selection;
+          this._onCancelSelection();
+
+          selection.forEach(el => {
+            const album = this.$.domRepeat.itemForElement(el);
+            this.splice('album.photos', this.album.photos.indexOf(album), 1);
+          });
+
+          this.$.domRepeat.render();
+          this._triggerUpdate({inmediate: true});
+        });
+      }
+
+      _onToggleEnableAlbumTapped(event) {
+        this.set('album.enabled', this.album.enabled === false ? true : false);
+        this._triggerUpdate({inmediate: true});
+      }
+
+      _onEditAlbumTapped(event) {
+        if (this._newAlbumOverlay) {
+          return;
+        }
+
+        const overlay = document.createElement('app-photos-new-album-overlay');
+        overlay.open();
+        overlay.albums = this.albums;
+        overlay.album = this.album;
+        overlay.language = this.language;
+        overlay.resources = this.resources;
+        overlay.onDetach = _ => this._newAlbumOverlay = null;
+        overlay.addEventListener('overlay-closed', event => {
+          if (!event.currentTarget.canceled) {
+            const title = event.currentTarget.$.titleInput.value;
+            this.set('album.title', title);
+            this._triggerUpdate({inmediate: true});
+          }
+        });
+        this._newAlbumOverlay = overlay;
+      }
+
+      _onDeleteAlbumTapped(event) {
+        if (confirm('Delete this album?')) {
+          this.splice('albums', this.albums.indexOf(this.album), 1);
           this._triggerUpdate({inmediate: true});
         }
-      });
-    },
-
-    _deleteAlbumTapped(event) {
-      if (confirm('Delete this album?')) {
-        this.splice('albums', this.albums.indexOf(this.album), 1);
-        this._triggerUpdate({inmediate: true});
       }
-    },
 
-    _triggerUpdate({inmediate=false} = {}) {
-      if (inmediate) {
-        this.cancelDebouncer('save-changes');
-        this.fire('trigger-update');
-      } else {
-        this.debounce('save-changes', _ => {
-          this.fire('trigger-update');
-        }, 4000);
-      }
-    },
-
-    _historyPushState(url) {
-      window.history.pushState({}, null, url);
-      window.dispatchEvent(new CustomEvent('location-changed'));
-    },
-
-    _computedDomRepeat(albumChanges) {
-      if (this.album && this.album.photos && this.album.photos.length) {
-        return this.album.photos;
-      }
-      return [];
-    },
-
-    _computeAlbumLengthText(photosLength) {
-      photosLength = photosLength || 0;
-      return this.localize('AlbumDetails.PhotosLength', 'length', String(photosLength));
-    },
-
-    _computeAlbumEnabledText(enabled) {
-      if (enabled === false) {
-        return ' · ' + this.localize('AlbumDetails.Disabled');
-      }
-    },
-
-    _computeToggleAlbumText(enabled) {
-      if (enabled === false) {
-        return this.localize('AlbumMenu.Enable');
-      }
-      return this.localize('AlbumMenu.Disable');
-    },
-
-    _computedThumbnailUrl(images) {
-      if (images) {
-        return images.sort((a,b) => {
-          return b.width - (a.width || 0);
-        })[0].url;
-      }
-    },
-
-    _computeIsDisabled(enabled) {
-      return enabled === false;
-    },
-    
-    // File upload
-    _onFilesSelected(event) {
-      const files = event.detail.files;
-
-      event.detail.thumbnailSizes = [
-        {width: 300, height: 300}
-      ];
-
-      this._uploadingFiles = this._uploadingFiles + files.length;
-    },
-
-    _onFilesLoaded(event) {
-      const files = event.detail.files;
-
-      // what when there is an error?
-      for (let i = 0; i < files.length; i++) {
-        this._uploadingFiles --;
-
-        const file = files[i];
-
-        // Falta guarda en el data el tamaño de la imagen original
-        // Luego
-        if (file.images) {
-          const parts = file.name.split('.');
-          parts.pop();
-          const filename = parts.join('.').replace(/[^\w-]/g,'');
-          this._uploadedFiles[filename] = file;
-
-          requestIdleCallback(_ => {
-            this.push('album.photos', {images: file.images});
-            this.$.domRepeat.render();
-
-            // save inmediately every 3 at least
-            // and every single one let the debounce be
-            this._triggerUpdate({
-              inmediate: this._uploadingFiles % 3 === 0
-            });
-          });
+      _triggerUpdate({inmediate=false} = {}) {
+        if (inmediate) {
+          clearTimeout(this._saveChangesTimeout);
+          this.dispatchEvent(new Event('albums-update', {composed: true}));
+          this.dispatchEvent(new Event('trigger-update', {composed: true}));
+        } else {
+          this._saveChangesTimeout = setTimeout(_ => {
+            this.dispatchEvent(new Event('albums-update', {composed: true}));
+            this.dispatchEvent(new Event('trigger-update', {composed: true}));
+          }, 4000);
         }
       }
-    },
 
-    _imageLoadError(event) {
-      const item = event.model.photo;
-      const images = item.images;
-
-      if (!images) {
-        return;
+      _historyPushState(url) {
+        window.history.pushState({}, null, url);
+        window.dispatchEvent(new CustomEvent('location-changed'));
       }
 
-      const original = images.find(item => {
-        const reg = new RegExp(`-${item.width}-${item.height}\\.\\w+`);
-        return !item.url.match(reg);
-      });
-
-      const filename = original.url.match(/\/([^\/]*)$/)[1];
-      const parts = filename.split('.');
-      parts.pop();
-      const name = parts.join('.');
-      const file = this._uploadedFiles[name];
-
-      if (file) {
-        const tmpUrl = URL.createObjectURL(file);
-        event.currentTarget.src = tmpUrl;
-        this._uploadedFiles[name] = null;
+      _computedDomRepeat(albumChanges) {
+        if (this.album && this.album.photos && this.album.photos.length) {
+          return this.album.photos;
+        }
+        return [];
       }
-    },
 
-  });
+      _computeAlbumLengthText(photosLength) {
+        photosLength = photosLength || 0;
+        return this.localize('AlbumDetails.PhotosLength', 'length', String(photosLength));
+      }
 
-}());
-</script>
+      _computeAlbumEnabledText(enabled) {
+        if (enabled === false) {
+          return ' · ' + this.localize('AlbumDetails.Disabled');
+        }
+      }
+
+      _computeToggleAlbumText(enabled) {
+        if (enabled === false) {
+          return this.localize('AlbumMenu.Enable');
+        }
+        return this.localize('AlbumMenu.Disable');
+      }
+
+      _computedThumbnailUrl(images) {
+        if (images) {
+          return images.sort((a,b) => {
+            return b.width - (a.width || 0);
+          })[0].url;
+        }
+      }
+
+      _computeIsDisabled(enabled) {
+        return enabled === false;
+      }
+
+      // File upload
+      _onFilesSelected(event) {
+        const files = event.detail.files;
+
+        event.detail.thumbnailSizes = [
+          {width: 300, height: 300}
+        ];
+
+        this._uploadingFiles = this._uploadingFiles + files.length;
+      }
+
+      _onFilesLoaded(event) {
+        const files = event.detail.files;
+
+        // what when there is an error?
+        for (let i = 0; i < files.length; i++) {
+          this._uploadingFiles --;
+
+          const file = files[i];
+
+          // Falta guarda en el data el tamaño de la imagen original
+          // Luego
+          if (file.images) {
+            const parts = file.name.split('.');
+            parts.pop();
+            const filename = parts.join('.').replace(/[^\w-]/g,'');
+            this._uploadedFiles[filename] = file;
+
+            requestAnimationFrame(_ => {
+              this.push('album.photos', {images: file.images});
+              this.$.domRepeat.render();
+
+              // save inmediately every 3 at least
+              // and every single one let the debounce be
+              this._triggerUpdate({
+                inmediate: this._uploadingFiles % 3 === 0
+              });
+            });
+          }
+        }
+      }
+
+      _imageLoadError(event) {
+        const item = event.model.photo;
+        const images = item.images;
+
+        if (!images) {
+          return;
+        }
+
+        const original = images.find(item => {
+          const reg = new RegExp(`-${item.width}-${item.height}\\.\\w+`);
+          return !item.url.match(reg);
+        });
+
+        const filename = original.url.match(/\/([^\/]*)$/)[1];
+        const parts = filename.split('.');
+        parts.pop();
+        const name = parts.join('.');
+        const file = this._uploadedFiles[name];
+
+        if (file) {
+          const tmpUrl = URL.createObjectURL(file);
+          event.currentTarget.src = tmpUrl;
+          this._uploadedFiles[name] = null;
+        }
+      }
+
+    }
+
+    customElements.define(AppPhotosAlbumPage.is, AppPhotosAlbumPage);
+
+  </script>
+</dom-module>

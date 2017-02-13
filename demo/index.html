@@ -1,55 +1,26 @@
 <!doctype html>
-<html>
+
+<html lang="en">
   <head>
-    <title>app-photos demo</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <title>App photos demo</title>
+
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
     <link rel="import" href="../app-photos.html">
-    <link rel="import" href="../../overlay-container/overlay-container.html">
 
-    <style is="custom-style">
-
-      html,body {
-        height: 100%;
-        width: 100%;
-        overflow: hidden;
-      }
-
+    <style>
       body {
-        margin: 0;
         font-family: sans-serif;
-        min-height: 100vh;
+        height: 100vh;
+        margin: 0;
       }
-
-      overlay-container {
-        bottom: 0;
-        left: 0;
-        pointer-events: none;
-        position: absolute;
-        right: 0;
-        top: 0;
-        z-index: 1;
-      }
-
     </style>
   </head>
   <body>
 
-    <overlay-container></overlay-container>
-    <app-photos></app-photos>
+    <app-photos content-name="My photos content"></app-photos>
 
-    <script>
-
-      window.onload = () => {
-        const el = document.querySelector('app-photos');
-
-        // el.data = {};
-
-        el.contentName = 'Untitled';
-      };
-
-    </script>
   </body>
 </html>

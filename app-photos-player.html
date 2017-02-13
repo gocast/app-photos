@@ -1,10 +1,10 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 
 <!--
 `app-photos-player`
 
 
-@demo demo/index.html 
+@demo demo/index.html
 -->
 
 <dom-module id="app-photos-player">
@@ -32,121 +32,141 @@
     <div id="container"></div>
 
   </template>
-</dom-module>
 
-<script>
-(function() {
-  'use strict';
+  <script>
 
-  Polymer({
+    class AppPhotosPlayer extends Polymer.Element {
 
-    is: 'app-photos-player',
+      static get is() {return 'app-photos-player';}
 
-    properties: {
+      static get config() {
+        return {
+          properties: {
 
-      data: Array,
+            settings: {
+              type: Object,
+              value: _ => {
+                return {speed: 1};
+              }
+            },
 
-      currentPhoto: {
-        type: Object,
-        readOnly: true,
-        observer: '_currentPhotoChanged'
+            language: String,
+
+            resources: Object,
+
+            _isAttached: {
+              type: Boolean,
+              value: false,
+            },
+
+          },
+
+          observers: [
+            '_dataChanged(data, _isAttached)'
+          ],
+
+        };
+      }
+
+      constructor() {
+        super();
+        this._photosInterval = null;
+        this._photos = null;
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this._isAttached = true;
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this._isAttached = false;
+        this._removePhotosInterval();
       },
 
-      _photos: Array,
-
-      _photosInterval: Number
-
-    },
-
-    observers: [
-      '_dataChanged(data, isAttached)'
-    ],
-
-    detached() {
-      this._removePhotosInterval();
-    },
-
-    _removePhotosInterval() {
-      if (this._photosInterval) {
-        clearInterval(this._photosInterval);
-        this._photosInterval = null;
-      }
-    },
-
-    _dataChanged(data) {
-      if (!data || !data.albums || !data.albums.length) {
-        this._removePhotosInterval();
-        this._setCurrentPhoto(null);
-        return;
-      }
-
-      // Create iron images
-      this._photos = [];
-      data.albums.forEach(album => {
-        if (album.enabled === false) {
+      _dataChanged(data) {
+        if (!data || !data.albums || !data.albums.length) {
+          this._removePhotosInterval();
+          this._setCurrentPhoto(null);
           return;
         }
-        album.photos.forEach(photo => {
-          // Get bigger url
-          const urls = photo.urls.sort((a,b) => {
-            return b.width - a.width;
+
+        // Create iron images
+        this._photos = [];
+
+        data.albums.forEach(album => {
+          if (album.enabled === false) {
+            return;
+          }
+          album.photos.forEach(photo => {
+            // Get bigger url
+            const urls = photo.urls.sort((a,b) => {
+              return b.width - a.width;
+            });
+
+            this._photos.push(this.create('iron-image', {
+              src: urls[0].url,
+              sizing: 'contain',
+              preload: true
+            }));
           });
-
-          this._photos.push(this.create('iron-image', {
-            src: urls[0].url,
-            sizing: 'contain',
-            preload: true
-          }));
         });
-      });
 
-      this._setCurrentPhoto(this._photos[0]);
-      this._removePhotosInterval();
+        this._setCurrentPhoto(this._photos[0]);
+        this._removePhotosInterval();
 
-      this._photosInterval = setInterval(_ => {
-        const index = this._photos.indexOf(this.currentPhoto);
+        this._photosInterval = setInterval(_ => {
+          const index = this._photos.indexOf(this.currentPhoto);
 
-        if (this._photos[index + 1]) {
-          this._setCurrentPhoto(this._photos[index + 1]);
-        } else {
-          this._setCurrentPhoto(this._photos[0]);
+          if (this._photos[index + 1]) {
+            this._setCurrentPhoto(this._photos[index + 1]);
+          } else {
+            this._setCurrentPhoto(this._photos[0]);
+          }
+        }, 8000);
+      },
+
+      _removePhotosInterval() {
+        if (this._photosInterval) {
+          clearInterval(this._photosInterval);
+          this._photosInterval = null;
         }
-      }, 8000);
-    },
+      },
 
-    _currentPhotoChanged(currentPhoto, old) {
-      if (currentPhoto) {
-        Polymer.dom(this.$.container).appendChild(currentPhoto);
+      _currentPhotoChanged(currentPhoto, old) {
+        if (currentPhoto) {
+          Polymer.dom(this.$.container).appendChild(currentPhoto);
 
-        requestAnimationFrame(_ => {
-          const animation = currentPhoto.animate([
-            {opacity: 0},
-            {opacity: 1}
-          ], {
-            duration: 600,
-            easing: 'cubic-bezier(0.47, 0, 0.745, 0.715)'
+          requestAnimationFrame(_ => {
+            const animation = currentPhoto.animate([
+              {opacity: 0},
+              {opacity: 1}
+            ], {
+              duration: 600,
+              easing: 'cubic-bezier(0.47, 0, 0.745, 0.715)'
+            });
           });
-        });
+        }
+
+        if (old) {
+          requestAnimationFrame(_ => {
+            const animation = old.animate([
+              {opacity: 1},
+              {opacity: 0}
+            ], {
+              duration: 600,
+              easing: 'cubic-bezier(0.47, 0, 0.745, 0.715)'
+            });
+            animation.onfinish = _ => old.remove();
+          });
+        }
       }
 
-      if (old) {
-        requestAnimationFrame(_ => {
-          const animation = old.animate([
-            {opacity: 1},
-            {opacity: 0}
-          ], {
-            duration: 600,
-            easing: 'cubic-bezier(0.47, 0, 0.745, 0.715)'
-          });
-
-          animation.onfinish = _ => {
-            old.remove();
-          };
-        });
-      }
     }
 
-  });
+    customElements.define(AppPhotosPlayer.is, AppPhotosPlayer);
 
-}());
-</script>
+
+  </script>
+</dom-module>

@@ -1,26 +1,39 @@
 {
   "name": "app-photos",
   "main": "app-photos.html",
+  "version": "1.0.0",
+  "license": "MIT",
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.7.0",
+    "app-localize-mixin": "git@github.com:sharedlabs/app-localize-mixin.git#^1.0.0",
+    "app-route": "PolymerElements/app-route#2.0-preview",
     "dropdown-menu": "git@github.com:sharedlabs/dropdown-menu.git",
-    "overlay-container": "git@github.com:sharedlabs/overlay-container.git",
-    "touch-slider": "git@github.com:sharedlabs/touch-slider.git",
-    "selectable-item": "git@github.com:sharedlabs/selectable-item.git",
     "fluid-grid": "git@github.com:sharedlabs/fluid-grid.git",
-    "input-file": "git@github.com:sharedlabs/input-file.git",
-    "iron-image": "PolymerElements/iron-image#^1.2.5",
-    "paper-spinner": "PolymerElements/paper-spinner#^1.2.1",
+    "goc-apps": "git@github.com:gocast/goc-apps.git",
     "goc-icons": "git@github.com:gocast/goc-icons.git",
     "goc-styles": "git@github.com:gocast/goc-styles.git",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
-    "app-route": "PolymerElements/app-route#^0.9.3",
-    "app-localize-behavior": "PolymerElements/app-localize-behavior#^0.10.1"
+    "input-file": "git@github.com:sharedlabs/input-file.git",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0-preview",
+    "iron-image": "PolymerElements/iron-image#2.0-preview",
+    "overlay-container": "git@github.com:sharedlabs/overlay-container.git",
+    "offthread-image": "git@github.com:sharedlabs/offthread-image.git",
+    "paper-spinner": "PolymerElements/paper-spinner#2.0-preview",
+    "polymer": "Polymer/polymer#2.0-preview",
+    "selectable-item": "git@github.com:sharedlabs/selectable-item.git",
+    "touch-slider": "git@github.com:sharedlabs/touch-slider.git"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "iron-component-page": "PolymerElements/iron-component-page#2.0-preview",
     "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "resolutions": {
+    "webcomponentsjs": "v1",
+    "polymer": "2.0-preview",
+    "iron-iconset-svg": "2.0-preview",
+    "iron-icon": "2.0-preview",
+    "iron-flex-layout": "2.0-preview",
+    "iron-meta": "2.0-preview",
+    "iron-resizable-behavior": "2.0-preview",
+    "iron-image": "2.0-preview"
   }
 }
