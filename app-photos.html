@@ -169,11 +169,6 @@
         this._toggleListeners({enable: true});
       }
 
-      disconnectedCallback() {
-        super.disconnectedCallback();
-        this._toggleListeners({enable: false});
-      }
-
       _routePageChanged(page) {
         if (page) {
           this.page = page;
@@ -201,8 +196,8 @@
       }
 
       _onTriggerUpdate() {
-        this._updateAlbumList();
         this._updateContent();
+        this._updateAlbumList();
       }
 
       _updateAlbumList() {
