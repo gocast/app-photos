@@ -200,7 +200,7 @@
       }
 
       _onBackTapped() {
-        requestAnimationFrame(_ => this.opened = false);
+        this.dispatchEvent(new Event('close-app', {composed: true}));
       }
 
       _onCreateAlbumTapped() {
