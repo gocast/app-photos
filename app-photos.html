@@ -161,7 +161,7 @@
       constructor() {
         super();
         this._updateContent = this._updateContent.bind(this);
-        this._albumsUpdated = this._albumsUpdated.bind(this);
+        this._onTriggerUpdate = this._onTriggerUpdate.bind(this);
       }
 
       connectedCallback() {
@@ -196,18 +196,23 @@
         if (!this.data.albums) {
           this.set('data.albums', []);
         }
+
         this._albums = this.data.albums;
       }
 
-      _albumsUpdated() {
+      _onTriggerUpdate() {
+        this._updateAlbumList();
+        this._updateContent();
+      }
+
+      _updateAlbumList() {
         this._albums = this._albums.slice(0);
         this.data.albums = this._albums;
       }
 
       _toggleListeners({enable}) {
         const m = enable ? 'addEventListener' : 'removeEventListener';
-        this[m]('trigger-update', this._updateContent);
-        this[m]('albums-update', this._albumsUpdated);
+        this[m]('trigger-update', this._onTriggerUpdate);
       }
 
       _updateContent() {

@@ -337,11 +337,9 @@
       _triggerUpdate({inmediate=false} = {}) {
         if (inmediate) {
           clearTimeout(this._saveChangesTimeout);
-          this.dispatchEvent(new Event('albums-update', {composed: true}));
           this.dispatchEvent(new Event('trigger-update', {composed: true}));
         } else {
           this._saveChangesTimeout = setTimeout(_ => {
-            this.dispatchEvent(new Event('albums-update', {composed: true}));
             this.dispatchEvent(new Event('trigger-update', {composed: true}));
           }, 4000);
         }

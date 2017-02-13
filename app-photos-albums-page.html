@@ -257,7 +257,6 @@
           const index = Number(event.currentTarget.getAttribute('index'));
           this.splice('albums', index, 1);
           this.$.domRepeat.render();
-          this.dispatchEvent(new Event('albums-update', {composed: true}));
           this.dispatchEvent(new Event('trigger-update', {composed: true}));
         }
       }
@@ -285,7 +284,6 @@
             enabled: true,
             photos: []
           });
-          this.dispatchEvent(new Event('albums-update', {composed: true}));
           this.dispatchEvent(new Event('trigger-update', {composed: true}));
         }
       }
