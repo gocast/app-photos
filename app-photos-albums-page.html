@@ -138,7 +138,11 @@
                   </div>
 
                   <dropdown-menu-container class="album__more-button">
-                    <paper-icon-button icon="dots-vertical" title$="[[localize('AlbumMenu.AriaLabel')]]"></paper-icon-button>
+                    <button
+                        class="icon-btn icon-btn--default"
+                        title$="[[localize('AlbumMenu.AriaLabel')]]">
+                        <iron-icon icon="dots-vertical"></iron-icon>
+                    </button>
 
                     <template is="dom-template">
                       <button index$="[[index]]" on-click="_onToggleEnableAlbumTapped">[[_computeToggleAlbumText(album.enabled)]]</button>
@@ -287,10 +291,13 @@
       }
 
       _computedDomRepeat(albumsChanges, visible) {
+        let albums;
         if (visible && !location.hash.match('album') && this.albums.length) {
-          return this.albums;
+          albums = this.albums;
+        } else {
+          albums = [];
         }
-        return [];
+        return albums;
       }
 
       _computeAlbumImageClass(enabled) {

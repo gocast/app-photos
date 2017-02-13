@@ -89,9 +89,12 @@
     <div class="header-layout">
       <div class="header-layout__header">
         <div class="header-toolbar">
-          <a href="#" class="icon-btn icon-btn--primary">
+          <button
+              class="icon-btn icon-btn--primary"
+              on-click="_onBackTapped"
+              title="[[localize('EditorPage.Header.BackButton')]]">
               <iron-icon icon="arrow-back"></iron-icon>
-          </a>
+          </button>
 
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[album.title]]</div>
@@ -277,13 +280,10 @@
         this.$.inputFile.selectFiles();
       }
 
-      _computeSecondaryToolbarClass(activeSelection) {
-        let classAttr = 'header-toolbar header-toolbar--secondary';
-        if (activeSelection) {
-          classAttr += ' header-toolbar--active';
-        }
-        return classAttr;
+      _onBackTapped() {
+        this._historyPushState('#');
       }
+
 
       _onRemoveSelectionTapped() {
         requestAnimationFrame(_ => {
@@ -455,6 +455,14 @@
           event.currentTarget.src = tmpUrl;
           this._uploadedFiles[name] = null;
         }
+      }
+
+      _computeSecondaryToolbarClass(activeSelection) {
+        let classAttr = 'header-toolbar header-toolbar--secondary';
+        if (activeSelection) {
+          classAttr += ' header-toolbar--active';
+        }
+        return classAttr;
       }
 
     }
