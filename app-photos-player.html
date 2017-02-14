@@ -43,16 +43,13 @@
         return {
           properties: {
 
-            settings: {
+            data: Array,
+
+            currentPhoto: {
               type: Object,
-              value: _ => {
-                return {speed: 1};
-              }
+              readOnly: true,
+              observer: '_currentPhotoChanged'
             },
-
-            language: String,
-
-            resources: Object,
 
             _isAttached: {
               type: Boolean,
@@ -101,15 +98,14 @@
           }
           album.photos.forEach(photo => {
             // Get bigger url
-            const urls = photo.urls.sort((a,b) => {
+            const images = photo.images.sort((a,b) => {
               return b.width - a.width;
             });
-
-            this._photos.push(this.create('iron-image', {
-              src: urls[0].url,
-              sizing: 'contain',
-              preload: true
-            }));
+            const imageElement = document.createElement('iron-image');
+            imageElement.src = images[0].url;
+            imageElement.sizing = 'contain';
+            imageElement.preload = true;
+            this._photos.push(imageElement);
           });
         });
 
