@@ -83,7 +83,7 @@
         super.disconnectedCallback();
         this._isAttached = false;
         this._removePhotosInterval();
-      },
+      }
 
       _dataChanged(data) {
         if (!data || !data.albums || !data.albums.length) {
@@ -125,14 +125,14 @@
             this._setCurrentPhoto(this._photos[0]);
           }
         }, 8000);
-      },
+      }
 
       _removePhotosInterval() {
         if (this._photosInterval) {
           clearInterval(this._photosInterval);
           this._photosInterval = null;
         }
-      },
+      }
 
       _currentPhotoChanged(currentPhoto, old) {
         if (currentPhoto) {
