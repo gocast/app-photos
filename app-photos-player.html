@@ -98,11 +98,11 @@
           }
           album.photos.forEach(photo => {
             // Get bigger url
-            const images = photo.images.sort((a,b) => {
-              return b.width - a.width;
-            });
+            const image = photo.images.sort((a,b) => {
+              return a.width - (b.width || 0);
+            })[0];
             const imageElement = document.createElement('iron-image');
-            imageElement.src = images[0].url;
+            imageElement.src = image.url;
             imageElement.sizing = 'contain';
             imageElement.preload = true;
             this._photos.push(imageElement);
