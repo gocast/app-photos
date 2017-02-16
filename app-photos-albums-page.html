@@ -101,7 +101,7 @@
               class="icon-btn icon-btn--primary"
               on-click="_onBackTapped"
               title="[[localize('EditorPage.Header.BackButton')]]">
-              <iron-icon icon="arrow-back"></iron-icon>
+              <touch-item><iron-icon icon="arrow-back"></iron-icon></touch-item>
           </button>
 
           <goc-app-icon size="small" app-name="photos"></goc-app-icon>
@@ -113,7 +113,9 @@
 
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
 
-          <button class="button" on-click="_onCreateAlbumTapped">[[localize('AlbumsPage.Header.CreateAlbum')]]</button>
+          <button class="btn btn--primary" on-click="_onCreateAlbumTapped">
+            <touch-item>[[localize('AlbumsPage.Header.CreateAlbum')]]</touch-item>
+          </button>
         </div>
       </div>
 
@@ -141,7 +143,7 @@
                     <button
                         class="icon-btn icon-btn--default"
                         title$="[[localize('AlbumMenu.AriaLabel')]]">
-                        <iron-icon icon="dots-vertical"></iron-icon>
+                        <touch-item><iron-icon icon="dots-vertical"></iron-icon></touch-item>
                     </button>
 
                     <template is="dom-template">

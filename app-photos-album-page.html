@@ -93,7 +93,7 @@
               class="icon-btn icon-btn--primary"
               on-click="_onBackTapped"
               title="[[localize('EditorPage.Header.BackButton')]]">
-              <iron-icon icon="arrow-back"></iron-icon>
+              <touch-item><iron-icon icon="arrow-back"></iron-icon></touch-item>
           </button>
 
           <div class="header-toolbar__main-content">
@@ -110,14 +110,14 @@
               class="icon-btn icon-btn--primary"
               on-click="_onSelectFilesTapped"
               title="[['AlbumPage.Header.UploadPhotos.AriaLabel']]">
-              <iron-icon icon="add-photo"></iron-icon>
+              <touch-item><iron-icon icon="add-photo"></iron-icon></touch-item>
           </button>
 
           <dropdown-menu-container>
             <button
                 class="icon-btn icon-btn--primary"
                 title="[[localize('AlbumMenu.AriaLabel')]]">
-                <iron-icon icon="dots-vertical"></iron-icon>
+                <touch-item><iron-icon icon="dots-vertical"></iron-icon></touch-item>
             </button>
 
             <template is="dom-template">
@@ -134,7 +134,7 @@
               class="icon-btn icon-btn--primary"
               on-click="_onCancelSelection"
               title="[[localize('AlbumPage.SelectionToolbar.CancelSelection')]]">
-              <iron-icon icon="close"></iron-icon>
+              <touch-item><iron-icon icon="close"></iron-icon></touch-item>
           </button>
 
           <div class="header-toolbar__main-content">
@@ -145,7 +145,7 @@
               class="icon-btn icon-btn--primary"
               on-click="_onRemoveSelectionTapped"
               title="[[localize('AlbumPage.SelectionToolbar.RemoveSelectedPhotos')]]">
-              <iron-icon icon="delete"></iron-icon>
+              <touch-item><iron-icon icon="delete"></iron-icon></touch-item>
           </button>
         </div>
       </div>

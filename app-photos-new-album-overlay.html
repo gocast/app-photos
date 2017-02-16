@@ -31,7 +31,7 @@
               class="icon-btn icon-btn--primary"
               on-click="_onCloseTapped"
               title="[[localize('NewAlbumOverlay.Header.Button.Close')]]">
-              <iron-icon icon="close"></iron-icon>
+              <touch-item><iron-icon icon="close"></iron-icon></touch-item>
           </button>
 
           <div class="header-toolbar__main-content">
@@ -40,7 +40,9 @@
 
           <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
 
-          <button class="button" on-click="_onSubmit">[[_computeHeaderSubmit(album, localize)]]</button>
+          <button class="btn btn--primary" on-click="_onSubmit">
+            <touch-item>[[_computeHeaderSubmit(album, localize)]]</touch-item>
+          </button>
         </div>
       </div>
 
