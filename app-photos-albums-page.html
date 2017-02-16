@@ -16,7 +16,7 @@
 -->
 <dom-module id="app-photos-albums-page">
   <template>
-    <style include="header-layout-styles box-styles icon-btn-styles button-styles missing-well-styles">
+    <style include="header-layout-styles box-styles icon-btn-styles missing-well-styles">
       :host {
         background: var(--goc-background-color);
         height: 100%;
@@ -120,7 +120,7 @@
       <div class="header-layout__content">
         <div class="albums">
           <fluid-grid id="fluidGrid" item-selector=".album" min-width="362px" margin-width="5px" visible="[[visible]]">
-            <dom-repeat id="domRepeat" items="[[_computedDomRepeat(albums, visible)]]" as="album">
+            <dom-repeat id="domRepeat" items="[[_computeDomRepeat(albums, _isAttached, visible)]]" as="album">
               <template>
                 <a href$="#/album/[[album.title]]" class="album">
                   <iron-image
@@ -182,8 +182,6 @@
 
             contentName: String,
 
-            visible: Boolean,
-
             language: String,
 
             resources: Object,
@@ -193,6 +191,10 @@
               value: false
             },
 
+            visible: Boolean,
+
+            _isAttached: Boolean,
+
           }
         };
       }
@@ -201,6 +203,16 @@
         super();
         this._newAlbumOverlay = null;
         this._newAlbumOverlayAnimationFinished = this._newAlbumOverlayAnimationFinished.bind(this);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        requestAnimationFrame(_ => this._isAttached = true);
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this._isAttached = false;
       }
 
       _onBackTapped() {
@@ -288,14 +300,14 @@
         }
       }
 
-      _computedDomRepeat(albumsChanges, visible) {
-        let albums;
-        if (visible && !location.hash.match('album') && this.albums.length) {
-          albums = this.albums;
+      _computeDomRepeat(albums, isAttached) {
+        if (albums === undefined || !isAttached) {return;}
+
+        if (!location.hash.match('album') && albums.length) {
+          return albums;
         } else {
-          albums = [];
+          return [];
         }
-        return albums;
       }
 
       _computeAlbumImageClass(enabled) {

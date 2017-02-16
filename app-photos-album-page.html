@@ -157,9 +157,15 @@
           </template>
         </dom-if>
 
-        <fluid-grid item-selector=".photo" container-selector="selectable-group" min-width="160px" margin-width="4px" visible="[[visible]]" auto-height>
+        <fluid-grid
+            item-selector=".photo"
+            container-selector="selectable-group"
+            min-width="160px"
+            margin-width="4px"
+            visible="[[visible]]"
+            auto-height>
           <selectable-group id="selectableGroup" active-selection="{{activeSelection}}">
-            <dom-repeat id="domRepeat" items="[[_computedDomRepeat(album.photos.*)]]" as="photo">
+            <dom-repeat id="domRepeat" items="[[_computedDomRepeat(album.photos.*, _isAttached, visible)]]" as="photo">
               <template>
                 <selectable-item class="photo">
                   <offthread-image
@@ -223,6 +229,8 @@
               value: 0
             },
 
+            _isAttached: Boolean,
+
             language: {
               type: String,
               value: 'en'
@@ -245,6 +253,16 @@
         this._newAlbumOverlay = null;
       }
 
+      connectedCallback() {
+        super.connectedCallback();
+        requestAnimationFrame(_ => this._isAttached = true);
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this._isAttached = false;
+      }
+
       _routePageChanged(albumTitle, albums, visible) {
         if (!albumTitle || !albums || !visible) {return;}
 
@@ -257,11 +275,11 @@
           return a.title === albumTitle;
         })[0];
 
-        setTimeout(_ => {
-          if (!this.album) {
-            this._historyPushState('#');
-          }
-        }, 10);
+        // setTimeout(_ => {
+        //   if (!this.album) {
+        //     this._historyPushState('#');
+        //   }
+        // }, 10);
       }
 
       _onSelectAll() {
@@ -350,7 +368,8 @@
         window.dispatchEvent(new CustomEvent('location-changed'));
       }
 
-      _computedDomRepeat(albumChanges) {
+      _computedDomRepeat(albumChanges, isAttached, visible) {
+        if (!visible || !isAttached) {return}
         if (this.album && this.album.photos && this.album.photos.length) {
           return this.album.photos;
         }

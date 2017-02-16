@@ -26,22 +26,31 @@
         pattern="/:page"
         data="{{routeData}}"></app-route>
 
-    <animated-pages page="[[page]]">
-      <app-photos-albums-page
-          name="albums"
-          albums="{{_albums}}"
-          content-name="[[contentName]]"
-          language="[[language]]"
-          resources="[[resources]]"
-          loading="{{loading}}"></app-photos-albums-page>
 
-      <app-photos-album-page
-          name="album"
-          albums="{{_albums}}"
-          language="[[language]]"
-          resources="[[resources]]"
-          loading="{{loading}}"></app-photos-album-page>
-    </animated-pages>
+    <dom-if if="[[visible]]">
+      <template>
+        <!--
+         animated pages passes 'visible' attr for its own routing mechanism,
+         but we also have to wait for the app-page to set this visible
+         -->
+        <animated-pages page="[[page]]">
+          <app-photos-albums-page
+              name="albums"
+              albums="{{_albums}}"
+              content-name="[[contentName]]"
+              language="[[language]]"
+              resources="[[resources]]"
+              loading="{{loading}}"></app-photos-albums-page>
+
+          <app-photos-album-page
+              name="album"
+              albums="{{_albums}}"
+              language="[[language]]"
+              resources="[[resources]]"
+              loading="{{loading}}"></app-photos-album-page>
+        </animated-pages>
+      </template>
+    </dom-if>
   </template>
 
   <script>
@@ -54,9 +63,10 @@
         return {
           properties: {
 
+            visible: Boolean,
+
             data: {
               type: Object,
-              observer: '_dataChanged',
               value: _ => {
                 return {albums: []};
               }
@@ -64,7 +74,6 @@
 
             _albums: {
               type: Array,
-              value: _ => []
             },
 
             release: Object,
@@ -90,6 +99,8 @@
             routeData: Object,
 
             route: Object,
+
+            _isAttached: Boolean,
 
             resources: {
               type: Object,
@@ -152,8 +163,9 @@
           },
 
           observers: [
+            '_dataChanged(data, _isAttached)',
             '_routePageChanged(routeData.page)',
-            '_routePathChanged(route.path)'
+            '_routePathChanged(route.path)',
           ],
         };
       }
@@ -166,7 +178,13 @@
 
       connectedCallback() {
         super.connectedCallback();
+        this._isAttached = true;
         this._toggleListeners({enable: true});
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this._isAttached = true;
       }
 
       _routePageChanged(page) {
@@ -183,7 +201,9 @@
       }
 
       // Ensure data integrity
-      _dataChanged() {
+      _dataChanged(data, isAttached) {
+        if (!isAttached) {return;}
+
         if (!this.data) {
           this.data = {};
         }
@@ -201,7 +221,7 @@
       }
 
       _updateAlbumList() {
-        this._albums = this._albums.slice(0);
+        this._albums = this._albums;
         this.data.albums = this._albums;
       }
 
