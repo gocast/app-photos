@@ -66,6 +66,11 @@
 
             data: {
               type: Object,
+              observer: '_dataChanged'
+            },
+
+            _defaultData: {
+              type: Object,
               value: _ => {
                 return {albums: []};
               }
@@ -184,6 +189,13 @@
       disconnectedCallback() {
         super.disconnectedCallback();
         this._isAttached = true;
+      }
+
+      _dataChanged(data) {
+        // Initialize data.
+        if (!data) {
+          this.data = Object.assign({}, this._defaultData);
+        }
       }
 
       _routePageChanged(page) {
