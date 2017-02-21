@@ -257,7 +257,7 @@
             this.set(`albums.${index}.title`, title);
 
             // Update model
-            const model = this.$.domRepeat._instances[index];
+            const model = this.$.domRepeat.__instances[index];
             model.set('album.title', album.title);
 
             this.dispatchEvent(new Event('trigger-update', {composed: true}));
@@ -281,7 +281,7 @@
         album.enabled = album.enabled === false ? true : false;
 
         // Update model
-        const model = this.$.domRepeat._instances[index];
+        const model = this.$.domRepeat.__instances[index];
         model.set('album.enabled', album.enabled);
         this.dispatchEvent(new Event('trigger-update', {composed: true}));
       }
