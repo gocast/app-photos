@@ -272,7 +272,7 @@
         }
 
         this.album = (this.albums || []).filter(a => {
-          return a.title === albumTitle;
+          return String(a.title).trim() === String(albumTitle).trim();
         })[0];
 
         // setTimeout(_ => {
