@@ -397,7 +397,7 @@
       _computedThumbnailUrl(images) {
         if (images) {
           return images.sort((a,b) => {
-            return b.width - (a.width || 0);
+            return a.width - (b.width || 0);
           })[0].url;
         }
       }
