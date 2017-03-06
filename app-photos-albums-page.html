@@ -176,28 +176,24 @@
 
       static get is() {return 'app-photos-albums-page';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
+          albums: Array,
 
-            albums: Array,
+          contentName: String,
 
-            contentName: String,
+          language: String,
 
-            language: String,
+          resources: Object,
 
-            resources: Object,
+          loading: {
+            type: Boolean,
+            value: false
+          },
 
-            loading: {
-              type: Boolean,
-              value: false
-            },
+          visible: Boolean,
 
-            visible: Boolean,
-
-            _isAttached: Boolean,
-
-          }
+          _isAttached: Boolean,
         };
       }
 

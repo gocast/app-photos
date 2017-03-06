@@ -58,120 +58,118 @@
 
       static get is() {return 'app-photos';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
+          visible: Boolean,
 
-            visible: Boolean,
-
-            data: {
-              type: Object,
-              observer: '_dataChanged'
-            },
-
-            _defaultData: {
-              type: Object,
-              value: _ => {
-                return {albums: []};
-              }
-            },
-
-            _albums: {
-              type: Array,
-            },
-
-            release: Object,
-
-            contentId: Number,
-
-            dataUpdatedAt: Number,
-
-            releaseUpdatedAt: Number,
-
-            contentName: String,
-
-            loading: {
-              type: Boolean,
-              value: false
-            },
-
-            language: {
-              type: String,
-              value: _ => 'en'
-            },
-
-            routeData: Object,
-
-            route: Object,
-
-            _isAttached: Boolean,
-
-            resources: {
-              type: Object,
-              value() {
-                return {
-                    // "AlbumsPage.Header.Subtitle": "Albums",
-                  "en": {
-                    "AlbumDetails.Disabled": "Disabled",
-                    "AlbumDetails.Empty": "Empty",
-                    "AlbumDetails.PhotosLength": "{length} photos",
-                    "AlbumMenu.AriaLabel": "More",
-                    "AlbumMenu.Delete": "Delete album",
-                    "AlbumMenu.Disable": "Disable",
-                    "AlbumMenu.Edit": "Edit details",
-                    "AlbumMenu.Enable": "Enable",
-                    "AlbumPage.DisabledMessage": "This album is disabled. These photos won't be displayed.",
-                    "AlbumPage.Header.UploadPhotos.AriaLabel": "Add photos",
-                    "AlbumPage.MissingPhotos.Title": "This album is empty.",
-                    "AlbumPage.MoreMenu.SelectAll": "Select all",
-                    "AlbumPage.SelectionToolbar.CancelSelection": "Cancel selection",
-                    "AlbumPage.SelectionToolbar.RemoveSelectedPhotos": "Remove selected photos",
-                    "AlbumsPage.Header.CreateAlbum": "Create album",
-                    "AlbumsPage.MissingAlbums.Title": "There are no albums.",
-                    "NewAlbumOverlay.Form.TitleLabel": "Album title",
-                    "NewAlbumOverlay.Header.Button.Close": "Close",
-                    "NewAlbumOverlay.Header.CreateTitle": "Create album",
-                    "NewAlbumOverlay.Header.EditTitle": "Edit album",
-                    "NewAlbumOverlay.Header.SubmitCreate": "Create album",
-                    "NewAlbumOverlay.Header.SubmitEdit": "Save",
-                  },
-                    // "AlbumsPage.Header.Subtitle": "Álbums",
-                  "es": {
-                    "AlbumDetails.Disabled": "Desactivado",
-                    "AlbumDetails.Empty": "Vácio",
-                    "AlbumDetails.PhotosLength": "{length} fotos",
-                    "AlbumMenu.AriaLabel": "Más",
-                    "AlbumMenu.Delete": "Eliminar álbum",
-                    "AlbumMenu.Disable": "Desactivar",
-                    "AlbumMenu.Edit": "Editar detalles",
-                    "AlbumMenu.Enable": "Activar",
-                    "AlbumPage.DisabledMessage": "Este álbum esta desactivado. Estas fotos no se mostraran en la presentación.",
-                    "AlbumPage.Header.UploadPhotos.AriaLabel": "Añadir fotos",
-                    "AlbumPage.MissingPhotos.Title": "Este álbum esta vácio.",
-                    "AlbumPage.MoreMenu.SelectAll": "Seleccionar todo",
-                    "AlbumPage.SelectionToolbar.CancelSelection": "Cancelar selección",
-                    "AlbumPage.SelectionToolbar.RemoveSelectedPhotos": "Eliminar fotos seleccionadas",
-                    "AlbumsPage.Header.CreateAlbum": "Crear álbum",
-                    "AlbumsPage.MissingAlbums.Title": "No has creado ningún álbum.",
-                    "NewAlbumOverlay.Form.TitleLabel": "Título del álbum",
-                    "NewAlbumOverlay.Header.Button.Close": "Cerrar",
-                    "NewAlbumOverlay.Header.CreateTitle": "Crear álbum",
-                    "NewAlbumOverlay.Header.EditTitle": "Editar álbum",
-                    "NewAlbumOverlay.Header.SubmitCreate": "Crear álbum",
-                    "NewAlbumOverlay.Header.SubmitEdit": "Guardar",
-                  }
-                };
-              }
-            },
-
+          data: {
+            type: Object,
+            observer: '_dataChanged'
           },
 
-          observers: [
-            '_dataChanged(data, _isAttached)',
-            '_routePageChanged(routeData.page)',
-            '_routePathChanged(route.path)',
-          ],
+          _defaultData: {
+            type: Object,
+            value: _ => {
+              return {albums: []};
+            }
+          },
+
+          _albums: {
+            type: Array,
+          },
+
+          release: Object,
+
+          contentId: Number,
+
+          dataUpdatedAt: Number,
+
+          releaseUpdatedAt: Number,
+
+          contentName: String,
+
+          loading: {
+            type: Boolean,
+            value: false
+          },
+
+          language: {
+            type: String,
+            value: _ => 'en'
+          },
+
+          routeData: Object,
+
+          route: Object,
+
+          _isAttached: Boolean,
+
+          resources: {
+            type: Object,
+            value() {
+              return {
+                  // "AlbumsPage.Header.Subtitle": "Albums",
+                "en": {
+                  "AlbumDetails.Disabled": "Disabled",
+                  "AlbumDetails.Empty": "Empty",
+                  "AlbumDetails.PhotosLength": "{length} photos",
+                  "AlbumMenu.AriaLabel": "More",
+                  "AlbumMenu.Delete": "Delete album",
+                  "AlbumMenu.Disable": "Disable",
+                  "AlbumMenu.Edit": "Edit details",
+                  "AlbumMenu.Enable": "Enable",
+                  "AlbumPage.DisabledMessage": "This album is disabled. These photos won't be displayed.",
+                  "AlbumPage.Header.UploadPhotos.AriaLabel": "Add photos",
+                  "AlbumPage.MissingPhotos.Title": "This album is empty.",
+                  "AlbumPage.MoreMenu.SelectAll": "Select all",
+                  "AlbumPage.SelectionToolbar.CancelSelection": "Cancel selection",
+                  "AlbumPage.SelectionToolbar.RemoveSelectedPhotos": "Remove selected photos",
+                  "AlbumsPage.Header.CreateAlbum": "Create album",
+                  "AlbumsPage.MissingAlbums.Title": "There are no albums.",
+                  "NewAlbumOverlay.Form.TitleLabel": "Album title",
+                  "NewAlbumOverlay.Header.Button.Close": "Close",
+                  "NewAlbumOverlay.Header.CreateTitle": "Create album",
+                  "NewAlbumOverlay.Header.EditTitle": "Edit album",
+                  "NewAlbumOverlay.Header.SubmitCreate": "Create album",
+                  "NewAlbumOverlay.Header.SubmitEdit": "Save",
+                },
+                  // "AlbumsPage.Header.Subtitle": "Álbums",
+                "es": {
+                  "AlbumDetails.Disabled": "Desactivado",
+                  "AlbumDetails.Empty": "Vácio",
+                  "AlbumDetails.PhotosLength": "{length} fotos",
+                  "AlbumMenu.AriaLabel": "Más",
+                  "AlbumMenu.Delete": "Eliminar álbum",
+                  "AlbumMenu.Disable": "Desactivar",
+                  "AlbumMenu.Edit": "Editar detalles",
+                  "AlbumMenu.Enable": "Activar",
+                  "AlbumPage.DisabledMessage": "Este álbum esta desactivado. Estas fotos no se mostraran en la presentación.",
+                  "AlbumPage.Header.UploadPhotos.AriaLabel": "Añadir fotos",
+                  "AlbumPage.MissingPhotos.Title": "Este álbum esta vácio.",
+                  "AlbumPage.MoreMenu.SelectAll": "Seleccionar todo",
+                  "AlbumPage.SelectionToolbar.CancelSelection": "Cancelar selección",
+                  "AlbumPage.SelectionToolbar.RemoveSelectedPhotos": "Eliminar fotos seleccionadas",
+                  "AlbumsPage.Header.CreateAlbum": "Crear álbum",
+                  "AlbumsPage.MissingAlbums.Title": "No has creado ningún álbum.",
+                  "NewAlbumOverlay.Form.TitleLabel": "Título del álbum",
+                  "NewAlbumOverlay.Header.Button.Close": "Cerrar",
+                  "NewAlbumOverlay.Header.CreateTitle": "Crear álbum",
+                  "NewAlbumOverlay.Header.EditTitle": "Editar álbum",
+                  "NewAlbumOverlay.Header.SubmitCreate": "Crear álbum",
+                  "NewAlbumOverlay.Header.SubmitEdit": "Guardar",
+                }
+              };
+            }
+          },
         };
+      }
+
+      static get observers() {
+        return [
+          '_dataChanged(data, _isAttached)',
+          '_routePageChanged(routeData.page)',
+          '_routePathChanged(route.path)',
+        ];
       }
 
       constructor() {

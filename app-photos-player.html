@@ -39,30 +39,28 @@
 
       static get is() {return 'app-photos-player';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
+          data: Array,
 
-            data: Array,
-
-            currentPhoto: {
-              type: Object,
-              readOnly: true,
-              observer: '_currentPhotoChanged'
-            },
-
-            _isAttached: {
-              type: Boolean,
-              value: false,
-            },
-
+          currentPhoto: {
+            type: Object,
+            readOnly: true,
+            observer: '_currentPhotoChanged'
           },
 
-          observers: [
-            '_dataChanged(data, _isAttached)'
-          ],
+          _isAttached: {
+            type: Boolean,
+            value: false,
+          },
 
         };
+      }
+
+      static get observers() {
+        return [
+          '_dataChanged(data, _isAttached)'
+        ];
       }
 
       constructor() {

@@ -31,23 +31,19 @@
 
       static get is() {return 'animated-pages';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
+          page: {
+            type: String,
+            observer: '_pageChanged'
+          },
 
-            page: {
-              type: String,
-              observer: '_pageChanged'
-            },
+          _isAttached: {
+            type: Boolean,
+            value: false,
+          },
 
-            _isAttached: {
-              type: Boolean,
-              value: false,
-            },
-
-            _animation: Object
-
-          }
+          _animation: Object
         };
       }
 

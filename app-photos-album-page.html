@@ -198,53 +198,50 @@
 
       static get is() {return 'app-photos-album-page';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-
-            albums: {
-              type: Array,
-              notify: true
-            },
-
-            album: Object,
-
-            activeSelection: {
-              type: Boolean,
-              value: false
-            },
-
-            visible: Boolean,
-
-            _uploadedFiles: {
-              type: Object,
-              value: _ => {
-                return {};
-              }
-            },
-
-            // Number of files being uploaded
-            _uploadingFiles: {
-              type: Number,
-              value: 0
-            },
-
-            _isAttached: Boolean,
-
-            language: {
-              type: String,
-              value: 'en'
-            },
-
-            resources: Object,
-
+          albums: {
+            type: Array,
+            notify: true
           },
 
-          observers: [
-            '_routePageChanged(routeData.albumTitle, albums, visible)',
-          ],
+          album: Object,
 
+          activeSelection: {
+            type: Boolean,
+            value: false
+          },
+
+          visible: Boolean,
+
+          _uploadedFiles: {
+            type: Object,
+            value: _ => {
+              return {};
+            }
+          },
+
+          // Number of files being uploaded
+          _uploadingFiles: {
+            type: Number,
+            value: 0
+          },
+
+          _isAttached: Boolean,
+
+          language: {
+            type: String,
+            value: 'en'
+          },
+
+          resources: Object,
         };
+      }
+
+      static get observers() {
+        return [
+          '_routePageChanged(routeData.albumTitle, albums, visible)',
+        ];
       }
 
       constructor() {

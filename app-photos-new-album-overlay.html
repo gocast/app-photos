@@ -69,22 +69,18 @@
 
       static get is() {return 'app-photos-new-album-overlay';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
+          albums: Array,
 
-            albums: Array,
+          album: {
+            type: Object,
+            value: null
+          },
 
-            album: {
-              type: Object,
-              value: null
-            },
+          language: String,
 
-            language: String,
-
-            resources: Object,
-
-          }
+          resources: Object,
         };
       }
 
