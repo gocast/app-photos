@@ -97,7 +97,9 @@
           album.photos.forEach(photo => {
             // Get bigger url
             const image = photo.images.sort((a,b) => {
-              return b.width - (a.width || 0);
+              // If width is not defined, it the original and should be the
+              // biggest
+              return (b.width || Infinity) - (a.width || Infinity);
             })[0];
             const imageElement = document.createElement('iron-image');
             imageElement.src = image.url;

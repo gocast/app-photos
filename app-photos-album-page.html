@@ -393,8 +393,10 @@
 
       _computedThumbnailUrl(images) {
         if (images) {
+          // Get smallest one. When no width, is the original (we consider it
+          // the  biggest)
           return images.sort((a,b) => {
-            return a.width - (b.width || 0);
+            return (a.width || Infinity) - (b.width || Infinity);
           })[0].url;
         }
       }

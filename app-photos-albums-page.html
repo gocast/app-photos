@@ -338,8 +338,9 @@
 
       _computeAlbumImageSrc(photo) {
         if (photo && photo.images.length) {
+          // Get smallest image
           return photo.images.sort((a,b) => {
-            return b.width - (a.width || 0);
+            return (a.width || Infinity) - (b.width || Infinity);
           })[0].url;
         }
       }
