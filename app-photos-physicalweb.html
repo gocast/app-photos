@@ -41,7 +41,6 @@
       .photo__iron-image {
         width: 100%;
         height: 300px;
-        background: #e8e8e8;
       }
     </style>
 
@@ -84,12 +83,17 @@
         <ul class="album">
           <dom-repeat items="[[_selectedAlbum.photos]]" as="photo">
             <template>
-              <offthread-image
-                  class="photo__iron-image"
-                  src="[[_computedThumbnailUrl(photo.images)]]"
-                  preload
-                  sizing="contain"
-                  on-error="_imageLoadError"></offthread-image>
+              <touch-item>
+                <a href="[[_computedPhotoBigUrl(photo.images)]]" target="_blank">
+                  <offthread-image
+                      class="photo__iron-image"
+                      src="[[_computedPhotoSmallUrl(photo.images)]]"
+                      preload
+                      display-loading
+                      sizing="contain"
+                      on-error="_imageLoadError"></offthread-image>
+                </a>
+              </touch-item>
             </template>
           </dom-repeat>
         </ul>
@@ -151,13 +155,16 @@
         return selectedAlbum && selectedAlbum.title || '';
       }
 
-      _computedThumbnailUrl(images) {
-        // const getBiggest = window.innerWidth > 500;
-        // smallest
+      _computedPhotoSmallUrl(images) {
         const urls = images.sort((a, b) => {
-          // const a = getBiggest ? image2 : image1;
-          // const b = getBiggest ? image1 : image2;
           return (a.width || Infinity) - (b.width || Infinity);
+        });
+        return urls[0].url;
+      }
+
+      _computedPhotoBigUrl(images) {
+        const urls = images.sort((a, b) => {
+          return (b.width || Infinity) - (a.width || Infinity);
         });
         return urls[0].url;
       }
