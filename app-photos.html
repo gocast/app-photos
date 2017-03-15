@@ -43,6 +43,7 @@
 
           <app-photos-album-page
               name="album"
+              content-id="[[contentId]]"
               albums="{{_albums}}"
               language="[[language]]"
               resources="[[resources]]"
@@ -80,7 +81,7 @@
 
           release: Object,
 
-          contentId: Number,
+          contentId: String,
 
           dataUpdatedAt: Number,
 
