@@ -1,0 +1,30 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <title>app-photos-physicalweb demo</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+    <link rel="import" href="../app-photos-physicalweb.html">
+
+    <style>
+      body {
+        font-family: 'Lato', sans-serif;
+        background: var(--goc-background-color);
+        height: 100vh;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+
+    <app-photos-physicalweb content-name="My photos"></app-photos-physicalweb>
+    <script>
+    const pw = document.querySelector('app-photos-physicalweb');
+    const data = {};
+    pw.data = data;
+    </script>
+
+  </body>
+</html>

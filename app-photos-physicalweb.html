@@ -1,0 +1,69 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../goc-icons/goc-icons.html">
+<link rel="import" href="../goc-apps/goc-app-icon.html">
+
+<dom-module id="app-photos-physicalweb">
+  <template>
+    <style include="header-layout-styles btn-styles icon-btn-styles">
+      :host {
+        display: block;
+        height: 100%;
+        padding: 0 25px;
+      }
+
+      ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .news__item {
+        border-bottom: solid 1px #ddd;
+        padding: 10px 0;
+      }
+
+      .news__item__addedat {
+        font-weight: 300;
+        color: #888;
+        margin-top: 3px;
+        font-size: 13px;
+      }
+
+    </style>
+
+    <goc-apps-collection
+        app-name="restaurant-menu"
+        item="{{_appInfo}}"
+        language="[[language]]"></goc-apps-collection>
+
+
+  </template>
+  <script>
+
+    class AppPhotosPhysicalweb extends Polymer.Element {
+
+      static get is() {return 'app-photos-physicalweb';}
+
+      static get properties() {
+        return {
+
+          contentName: String,
+
+          data: {
+            type: Object,
+          },
+
+        };
+      }
+
+      _computeDate(date) {
+        return moment(date).calendar();
+      }
+
+    }
+
+    customElements.define(AppPhotosPhysicalweb.is, AppPhotosPhysicalweb);
+
+  </script>
+</dom-module>
