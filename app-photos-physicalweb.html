@@ -47,14 +47,13 @@
     <app-location route="{{_route}}" use-hash-as-path></app-location>
     <app-route
         route="[[_route]]"
-        pattern="/:page/:idx"
-        data="{{_routeData}}"></app-route>
+        pattern="/:page/:idx"></app-route>
 
-    <goc-apps-collection
+<!--     <goc-apps-collection
         app-name="restaurant-menu"
         item="{{_appInfo}}"
         language="[[language]]"></goc-apps-collection>
-
+ -->
 
     <dom-if if="[[_isMainMenuPage]]">
       <template>
@@ -127,7 +126,6 @@
           _isMainMenuPage: Boolean,
           _page: String,
           _route: Object,
-          _routeData: Object,
           _albumIndex: Number,
 
         };
