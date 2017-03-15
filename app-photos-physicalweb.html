@@ -1,15 +1,17 @@
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../app-route/app-route.html">
+<link rel="import" href="../app-location/app-location.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-apps/goc-app-icon.html">
+<link rel="import" href="../offthread-image/offthread-image.html">
 
 <dom-module id="app-photos-physicalweb">
   <template>
-    <style include="header-layout-styles btn-styles icon-btn-styles">
+    <style include="header-layout-styles btn-styles icon-btn-styles box-styles">
       :host {
         display: block;
         height: 100%;
-        padding: 0 25px;
       }
 
       ul {
@@ -18,25 +20,81 @@
         list-style: none;
       }
 
-      .news__item {
-        border-bottom: solid 1px #ddd;
-        padding: 10px 0;
+      h2 {
+        margin: 0 20px 15px 20px;
+        font-weight: 400;
       }
 
-      .news__item__addedat {
-        font-weight: 300;
-        color: #888;
-        margin-top: 3px;
-        font-size: 13px;
+      .albums__item {
+        border-bottom: solid 1px #eee;
       }
 
+      .album__item_link {
+        text-decoration: none;
+        color: #333;
+      }
+
+      .albums__item__title {
+        padding: 20px;
+      }
+
+      .photo__iron-image {
+        width: 100%;
+        height: 300px;
+      }
     </style>
+
+    <app-location route="{{_route}}" use-hash-as-path></app-location>
+    <app-route
+        route="[[_route]]"
+        pattern="/:page/:idx"
+        data="{{_routeData}}"></app-route>
 
     <goc-apps-collection
         app-name="restaurant-menu"
         item="{{_appInfo}}"
         language="[[language]]"></goc-apps-collection>
 
+
+    <dom-if if="[[_isMainMenuPage]]">
+      <template>
+        <h2>Albums</h2>
+
+        <ul class="albums box">
+          <dom-repeat items="[[data.albums]]" as="album">
+            <template>
+              <touch-item>
+                <a class="album__item_link" href$="[[_computeAlbumUrl(album)]]">
+                  <li class="albums__item" on-click="_onAlbumTapped">
+                    <div class="albums__item__title">[[album.title]]</div>
+                  </li>
+                </a>
+              </touch-item>
+            </template>
+          </dom-repeat>
+        </ul>
+      </template>
+    </dom-if>
+
+
+    <dom-if if="[[!_isMainMenuPage]]">
+      <template>
+        <h2>[[_computeAlbumTitle(_selectedAlbum)]]</h2>
+
+        <ul class="album">
+          <dom-repeat items="[[_selectedAlbum.photos]]" as="photo">
+            <template>
+              <offthread-image
+                  class="photo__iron-image"
+                  src="[[_computedThumbnailUrl(photo.images)]]"
+                  preload
+                  sizing="contain"
+                  on-error="_imageLoadError"></offthread-image>
+            </template>
+          </dom-repeat>
+        </ul>
+      </template>
+    </dom-if>
 
   </template>
   <script>
@@ -50,15 +108,67 @@
 
           contentName: String,
 
+          channelId: String,
+
+          contentId: String,
+
+          appName: String,
+
           data: {
             type: Object,
+            observer: '_dataChanged'
           },
+
+          _selectedAlbum: {
+            type: Object,
+            computed: '_computeSelectedAlbum(_albumIndex, data)',
+          },
+
+          _isMainMenuPage: Boolean,
+          _page: String,
+          _route: Object,
+          _routeData: Object,
+          _albumIndex: Number,
 
         };
       }
 
-      _computeDate(date) {
-        return moment(date).calendar();
+      static get observers() {
+        return [
+          '_routePathChanged(_route.path)',
+        ];
+      }
+
+      _routePathChanged(path) {
+        const [page, idx] = path.match(/([^\/]+)/g) || [];
+        this._page = page || 'home';
+        this._albumIndex = idx ? Number(idx) : undefined;
+        this._isMainMenuPage = this._page === 'home';
+      }
+
+      _computeAlbumUrl(album) {
+        const idx = this.data.albums.indexOf(album);
+        return `#/album/${idx}`;
+      }
+
+      _computeAlbumTitle(selectedAlbum) {
+        return selectedAlbum && selectedAlbum.title || '';
+      }
+
+      _computedThumbnailUrl(images) {
+        // const getBiggest = window.innerWidth > 500;
+        // smallest
+        const urls = images.sort((a, b) => {
+          // const a = getBiggest ? image2 : image1;
+          // const b = getBiggest ? image1 : image2;
+          return (a.width || Infinity) - (b.width || Infinity);
+        });
+        return urls[0].url;
+      }
+
+      _computeSelectedAlbum(albumIndex, data) {
+        if (!data || typeof albumIndex !== 'number') {return;}
+        return data.albums[albumIndex];
       }
 
     }
