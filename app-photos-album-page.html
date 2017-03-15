@@ -83,6 +83,7 @@
 
     <input-file
         id="inputFile"
+        content-id$="[[contentId]]"
         on-files-selected="_onFilesSelected"
         on-files-loaded="_onFilesLoaded"></input-file>
 
@@ -214,6 +215,15 @@
 
           visible: Boolean,
 
+          contentId: String,
+
+          language: {
+            type: String,
+            value: 'en'
+          },
+
+          resources: Object,
+
           _uploadedFiles: {
             type: Object,
             value: _ => {
@@ -227,14 +237,8 @@
             value: 0
           },
 
-          _isAttached: Boolean,
+          _isAttached: Boolean
 
-          language: {
-            type: String,
-            value: 'en'
-          },
-
-          resources: Object,
         };
       }
 
@@ -298,7 +302,6 @@
       _onBackTapped() {
         this._historyPushState('#');
       }
-
 
       _onRemoveSelectionTapped() {
         requestAnimationFrame(_ => {
