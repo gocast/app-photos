@@ -1,17 +1,16 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../app-route/app-route.html">
+<link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../app-route/app-location.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
-<link rel="import" href="../goc-icons/goc-icons.html">
-<link rel="import" href="../goc-apps/goc-app-icon.html">
 <link rel="import" href="../offthread-image/offthread-image.html">
 
 <dom-module id="app-photos-physicalweb">
   <template>
-    <style include="header-layout-styles btn-styles icon-btn-styles box-styles">
+    <style>
       :host {
         display: block;
-        height: 100%;
+        min-height: 100%;
       }
 
       ul {
@@ -20,27 +19,64 @@
         list-style: none;
       }
 
-      h2 {
-        margin: 0 20px 15px 20px;
-        font-weight: 400;
+      /* albums page */
+      .albums {
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
+        box-sizing: border-box;
+        padding: 15px 15px 0 0;
       }
 
       .albums__item {
-        border-bottom: solid 1px #eee;
-      }
-
-      .album__item_link {
+        @apply --layout-flex;
+        border-radius: 4px;
+        color: inherit;
+        display: block;
+        min-width: 150px;
+        margin-bottom: 32px;
+        margin-left:  15px;
         text-decoration: none;
-        color: #333;
       }
 
-      .albums__item__title {
-        padding: 20px;
+      .albums__iron-image {
+        border-radius: 2px;
+        height: 180px;
+        width: 100%;
       }
 
-      .photo__iron-image {
+      .albums__detail {
+        margin-top: 5px;
+      }
+
+      .albums__title {
+        font-weight: 700;
+      }
+
+      .albums__length {
+        font-size: 14px;
+        margin-top: 2px;
+        color: var(--paper-grey-500);
+      }
+
+      /* photos page */
+      .photos {
+        @apply --layout-vertical;
+      }
+
+      .photos__item {
         width: 100%;
         height: 300px;
+        margin-bottom: 10px;
+      }
+
+      .photos__iron-image {
+        background: white;
+        height: 100%;
+        width: 100%;
+
+        border: 1px solid var(--paper-grey-300);
+        border-left: none;
+        border-right: none;
       }
     </style>
 
@@ -49,51 +85,44 @@
         route="[[_route]]"
         pattern="/:page/:idx"></app-route>
 
-<!--     <goc-apps-collection
-        app-name="restaurant-menu"
-        item="{{_appInfo}}"
-        language="[[language]]"></goc-apps-collection>
- -->
-
     <dom-if if="[[_isMainMenuPage]]">
       <template>
-        <h2>Albums</h2>
-
-        <ul class="albums box">
+        <div class="albums">
           <dom-repeat items="[[data.albums]]" as="album">
             <template>
-              <touch-item>
-                <a class="album__item_link" href$="[[_computeAlbumUrl(album)]]">
-                  <li class="albums__item">
-                    <div class="albums__item__title">[[album.title]]</div>
-                  </li>
-                </a>
-              </touch-item>
+              <a class="albums__item" href$="[[_computeAlbumUrl(album)]]">
+                <iron-image
+                  class="albums__iron-image"
+                  src="[[_computedPhotoSmallUrl(album.photos.0.images)]]"
+                  sizing="cover"></iron-image>
+                
+                <div class="albums__detail">
+                  <div class="albums__title">[[album.title]]</div>
+                  <div class="albums__length">[[album.photos.length]] items</div>
+                </div>
+              </a>
             </template>
           </dom-repeat>
-        </ul>
+        </div>
       </template>
     </dom-if>
 
-
     <dom-if if="[[!_isMainMenuPage]]">
       <template>
-        <h2>[[_computeAlbumTitle(_selectedAlbum)]]</h2>
+        <h2 style="padding-left: 20px;">[[_computeAlbumTitle(_selectedAlbum)]]</h2>
 
-        <ul class="album">
+        <ul class="photos">
           <dom-repeat items="[[_selectedAlbum.photos]]" as="photo">
             <template>
-              <touch-item>
-                <a href="[[_computedPhotoBigUrl(photo.images)]]" target="_blank">
-                  <offthread-image
-                      class="photo__iron-image"
-                      src="[[_computedPhotoSmallUrl(photo.images)]]"
-                      preload
-                      display-loading
-                      sizing="contain"
-                      on-error="_imageLoadError"></offthread-image>
-                </a>
-              </touch-item>
+              <a href="[[_computedPhotoBigUrl(photo.images)]]" class="photos__item" target="_blank">
+                <offthread-image
+                    class="photos__iron-image"
+                    src="[[_computedPhotoSmallUrl(photo.images)]]"
+                    preload
+                    display-loading
+                    sizing="contain"
+                    on-error="_imageLoadError"></offthread-image>
+              </a>
             </template>
           </dom-repeat>
         </ul>
@@ -126,9 +155,12 @@
           },
 
           _isMainMenuPage: Boolean,
+
           _page: String,
+
           _route: Object,
-          _albumIndex: Number,
+
+          _albumIndex: Number
 
         };
       }

@@ -17,7 +17,7 @@
     "overlay-container": "git@github.com:sharedlabs/overlay-container.git",
     "offthread-image": "git@github.com:sharedlabs/offthread-image.git",
     "paper-spinner": "PolymerElements/paper-spinner#2.0-preview",
-    "polymer": "Polymer/polymer#2.0-preview",
+    "polymer": "git@github.com:Polymer/polymer#v2.0.0-rc.3",
     "selectable-item": "git@github.com:sharedlabs/selectable-item.git",
     "touch-slider": "git@github.com:sharedlabs/touch-slider.git"
   },
@@ -27,8 +27,8 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "resolutions": {
-    "webcomponentsjs": "v1",
-    "polymer": "2.0-preview",
+    "webcomponentsjs": "^v1.0.0-rc.5",
+    "polymer": "v2.0.0-rc.3",
     "iron-iconset-svg": "2.0-preview",
     "iron-icon": "2.0-preview",
     "iron-flex-layout": "2.0-preview",
