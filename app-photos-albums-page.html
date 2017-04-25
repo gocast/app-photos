@@ -1,26 +1,18 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
-<link rel="import" href="../fluid-grid/fluid-grid.html">
-<link rel="import" href="../goc-apps/goc-app-icon.html">
-<link rel="import" href="../goc-apps/goc-apps-collection.html">
-<link rel="import" href="../goc-icons/goc-icons.html">
-<link rel="import" href="../goc-styles/goc-styles.html">
-<link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../goc-styles/goc-styles.html">
+
 <link rel="import" href="app-photos-new-album-overlay.html">
 
-<!--
-`app-photos-albums-page`
-
-@demo demo/app-photos-albums-page.html
--->
 <dom-module id="app-photos-albums-page">
   <template>
-    <style include="header-layout-styles box-styles btn-styles icon-btn-styles missing-well-styles">
+    <style include="header-styles btn-styles icon-btn-styles missing-well-styles">
       :host {
         background: var(--goc-background-color);
+        display: block;
         height: 100%;
-        display: none;
       }
 
       .header-layout__content {
@@ -28,145 +20,39 @@
         padding: 0;
       }
 
-      fluid-grid {
-        @apply(--layout-horizontal);
-        @apply(--layout-wrap);
-        margin-left: 5px;
-      }
-
-      .album {
-        @apply(--unselectable);
-        background-color: var(--paper-grey-500);
-        box-sizing: border-box;
-        color: white;
-        cursor: pointer;
-        height: 250px;
-        margin: 5px 5px 0 0;
-        overflow: hidden;
-        position: relative;
-        text-decoration: none;
-      }
-
-      .album__iron-image {
+      iron-list {
         height: 100%;
-        width: 100%;
       }
 
-      .album__iron-image--disabled {
-        filter: grayscale(100%);
-        opacity: 0.4;
-      }
-
-      .album__detail {
-        bottom: 24px;
-        left: 24px;
-        position: absolute;
-        right: 24px;
-      }
-
-      .album__title {
-        font-size: 18px;
-        font-weight: bold;
-        margin: 4px 0;
-      }
-
-      .album__gradient {
-        background-image: -webkit-linear-gradient(to bottom,transparent,rgba(0,0,0,0.74));
-        background-image: linear-gradient(to bottom,transparent,rgba(0,0,0,0.74));
-        bottom: 0;
-        content: '';
-        height: 160px;
-        position: absolute;
-        width: 100%;
-      }
-
-      .album__more-button {
-        position: absolute;
-        right: 10px;
-        top: 10px;
-      }
     </style>
 
-    <goc-apps-collection
-        app-name="photos"
-        item="{{appInfo}}"
-        language="[[language]]"></goc-apps-collection>
+    <goc-toolbar-layout
+        left-icon="arrow-back"
+        on-left-icon-tapped="_closeApp"
+        heading="[[contentName]]"
+        subheading="[[appInfo.displayName]]"
+        app-icon="photos">
 
-    <app-photos-albums-manager albums="{{albums}}" id="albumsManager"></app-photos-albums-manager>
-
-    <div class="header-layout">
-      <div class="header-layout__header">
-        <div class="header-toolbar">
-          <button
-              class="icon-btn icon-btn--primary"
-              on-click="_onBackTapped"
-              title="[[localize('EditorPage.Header.BackButton')]]">
-              <touch-item><iron-icon icon="arrow-back"></iron-icon></touch-item>
-          </button>
-
-          <goc-app-icon size="small" app-name="photos"></goc-app-icon>
-
-          <div class="header-toolbar__main-content">
-            <div class="header-toolbar__title">[[contentName]]</div>
-            <div class="header-toolbar__subtitle">[[appInfo.displayName]]</div>
-          </div>
-
-          <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
-
-          <button class="btn btn--primary" on-click="_onCreateAlbumTapped">
-            <touch-item>[[localize('AlbumsPage.Header.CreateAlbum')]]</touch-item>
-          </button>
-        </div>
+      <div slot="toolbar-right-container">
+        <button class="btn btn--primary" on-click="_createAlbumTapped">
+          <touch-item>[[localize('Header.CreateAlbum')]]</touch-item>
+        </button>  
       </div>
 
-      <div class="header-layout__content">
-        <div class="albums">
-          <fluid-grid id="fluidGrid" item-selector=".album" min-width="362px" margin-width="5px" visible="[[visible]]">
-            <dom-repeat id="domRepeat" items="[[_computeDomRepeat(albums, _isAttached, visible)]]" as="album">
-              <template>
-                <a href$="#/album/[[album.title]]" class="album">
-                  <iron-image
-                      class$="[[_computeAlbumImageClass(album.enabled)]]"
-                      src="[[_computeAlbumImageSrc(album.photos.0)]]"
-                      sizing="cover"></iron-image>
-
-                  <div class="album__gradient" hidden$="[[!album.photos.length]]"></div>
-                  <div class="album__detail">
-                    <div class="album__title">[[album.title]]</div>
-                    <div>
-                      [[_computeAlbumLengthText(album.photos, localize)]]
-                      [[_computeAlbumEnabledText(album.enabled, localize)]]
-                    </div>
-                  </div>
-
-                  <dropdown-menu-container class="album__more-button">
-                    <button
-                        class="icon-btn icon-btn--default"
-                        title$="[[localize('AlbumMenu.AriaLabel')]]">
-                        <touch-item><iron-icon icon="dots-vertical"></iron-icon></touch-item>
-                    </button>
-
-                    <template is="dom-template">
-                      <button index$="[[index]]" on-click="_onToggleEnableAlbumTapped">[[_computeToggleAlbumText(album.enabled)]]</button>
-                      <button index$="[[index]]" on-click="_onEditAlbumTapped">[[localize('AlbumMenu.Edit')]]</button>
-                      <button index$="[[index]]" on-click="_onDeleteAlbumTapped">[[localize('AlbumMenu.Delete')]]</button>
-                    </template>
-                  </dropdown-menu-container>
-                </a>
-              </template>
-            </dom-repeat>
-          </fluid-grid>
-        </div>
-
-        <dom-if if="[[_computeMissingWellVisible(loading, albums)]]">
+      <div slot="content">
+        <iron-list class="albums" items="albums">
           <template>
-            <div class="missing-well">
-              <div class="missing-well__title">[[localize('AlbumsPage.MissingAlbums.Title')]]</div>
-            </div>
+
+          </template>
+        </iron-list>        
+
+        <dom-if>
+          <template>
           </template>
         </dom-if>
+
       </div>
-    </div>
+    </goc-toolbar-layout>
 
   </template>
 
@@ -178,111 +64,65 @@
 
       static get properties() {
         return {
-          albums: Array,
 
-          contentName: String,
+          albums: {
+            type: Array,
+          },
 
           language: String,
 
-          resources: Object,
+          contentName: String,
 
-          loading: {
-            type: Boolean,
-            value: false
-          },
+          resources: {
+            type: Object,
+            value: _ => {
+              return {
+                "en": {
+                  "Header.CreateAlbum": "Create album",
+                  "MissingAlbums.Title": "There are no albums."
+                },
+                "es": {
+                  "Header.CreateAlbum": "Crear álbum",
+                  "MissingAlbums.Title": "No has creado ningún álbum.",
+                }
+              };
+            }
+          }
 
-          visible: Boolean,
-
-          _isAttached: Boolean,
         };
       }
 
       constructor() {
         super();
         this._newAlbumOverlay = null;
-        this._newAlbumOverlayAnimationFinished = this._newAlbumOverlayAnimationFinished.bind(this);
+        this._newAlbumOverlayClosed = this._newAlbumOverlayClosed.bind(this);
       }
 
-      connectedCallback() {
-        super.connectedCallback();
-        requestAnimationFrame(_ => this._isAttached = true);
+      _closeApp() {
+        this.dispatchEvent(new Event('close-app', {
+          bubbles: true,
+          composed: true
+        }));
       }
 
-      disconnectedCallback() {
-        super.disconnectedCallback();
-        this._isAttached = false;
-      }
-
-      _onBackTapped() {
-        this.dispatchEvent(new Event('close-app', {composed: true}));
-      }
-
-      _onCreateAlbumTapped() {
+      _createAlbumTapped() {
         if (this._newAlbumOverlay) {
           return;
         }
 
         const overlay = document.createElement('app-photos-new-album-overlay')
-        overlay.open();
         overlay.albums = this.albums;
         overlay.language = this.language;
-        overlay.resources = this.resources;
         overlay.onDetach = _ => this._newAlbumOverlay = null;
+
         overlay.addEventListener('overlay-close-animation-finish',
-          this._newAlbumOverlayAnimationFinished);
-        this._newAlbumOverlay = overlay;
-      }
+          this._newAlbumOverlayClosed);
 
-      _onEditAlbumTapped(event) {
-        if (this._newAlbumOverlay) {
-          return;
-        }
-
-        const index = Number(event.currentTarget.getAttribute('index'));
-        const album = this.albums[index];
-        const overlay = document.createElement('app-photos-new-album-overlay');
+        this._newAlbumOverlay = overlay;        
         overlay.open();
-        overlay.albums = this.albums;
-        overlay.language = this.language;
-        overlay.resources = this.resources;
-        overlay.album = album;
-        overlay.onDetach = _ => this._newAlbumOverlay = null;
-        overlay.addEventListener('overlay-closed', event => {
-          if (!event.currentTarget.canceled) {
-            const title = event.currentTarget.$.titleInput.value;
-            this.set(`albums.${index}.title`, title);
-
-            // Update model
-            const model = this.$.domRepeat.__instances[index];
-            model.set('album.title', album.title);
-
-            this.dispatchEvent(new Event('trigger-update', {composed: true}));
-          }
-        });
-        this._newAlbumOverlay = overlay;
       }
 
-      _onDeleteAlbumTapped(event) {
-        if (confirm('Delete this album?')) {
-          const index = Number(event.currentTarget.getAttribute('index'));
-          this.splice('albums', index, 1);
-          this.$.domRepeat.render();
-          this.dispatchEvent(new Event('trigger-update', {composed: true}));
-        }
-      }
-
-      _onToggleEnableAlbumTapped(event) {
-        const index = Number(event.currentTarget.getAttribute('index'));
-        const album = this.albums[index];
-        album.enabled = album.enabled === false ? true : false;
-
-        // Update model
-        const model = this.$.domRepeat.__instances[index];
-        model.set('album.enabled', album.enabled);
-        this.dispatchEvent(new Event('trigger-update', {composed: true}));
-      }
-
-      _newAlbumOverlayAnimationFinished(event)  {
+      _newAlbumOverlayClosed(event) {
         if (!event.currentTarget.canceled) {
           const title = event.currentTarget.$.titleInput.value;
 
@@ -294,59 +134,9 @@
             enabled: true,
             photos: []
           });
+
           this.dispatchEvent(new Event('trigger-update', {composed: true}));
         }
-      }
-
-      _computeDomRepeat(albums, isAttached) {
-        if (albums === undefined || !isAttached) {return;}
-
-        if (!location.hash.match('album') && albums.length) {
-          return albums;
-        } else {
-          return [];
-        }
-      }
-
-      _computeAlbumImageClass(enabled) {
-        let classAttr = 'album__iron-image';
-        if (enabled === false) {
-          classAttr += ' album__iron-image--disabled';
-        }
-        return classAttr;
-      }
-
-      _computeAlbumEnabledText(enabled) {
-        if (enabled === false) {
-          return ' · ' + this.localize('AlbumDetails.Disabled');
-        }
-      }
-
-      _computeAlbumLengthText(photos) {
-        if (photos && photos.length) {
-          return this.localize('AlbumDetails.PhotosLength', 'length', photos.length);
-        }
-        return this.localize('AlbumDetails.Empty');
-      }
-
-      _computeToggleAlbumText(enabled) {
-        if (enabled === false) {
-          return this.localize('AlbumMenu.Enable');
-        }
-        return this.localize('AlbumMenu.Disable');
-      }
-
-      _computeAlbumImageSrc(photo) {
-        if (photo && photo.images.length) {
-          // Get smallest image
-          return photo.images.sort((a,b) => {
-            return (a.width || Infinity) - (b.width || Infinity);
-          })[0].url;
-        }
-      }
-
-      _computeMissingWellVisible(loading, album) {
-        return !loading && album && !album.length;
       }
 
     }

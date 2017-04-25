@@ -2,7 +2,6 @@
   "name": "app-photos",
   "main": "app-photos.html",
   "version": "1.0.0",
-  "license": "MIT",
   "dependencies": {
     "app-localize-mixin": "git@github.com:sharedlabs/app-localize-mixin.git#^1.0.0",
     "app-route": "PolymerElements/app-route#2.0-preview",
@@ -14,10 +13,12 @@
     "input-file": "git@github.com:sharedlabs/input-file.git",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0-preview",
     "iron-image": "PolymerElements/iron-image#2.0-preview",
-    "overlay-container": "git@github.com:sharedlabs/overlay-container.git",
+    "iron-pages": "PolymerElements/iron-pages#2.0-preview",
+    "iron-list": "PolymerElements/iron-list#2.0-preview",
     "offthread-image": "git@github.com:sharedlabs/offthread-image.git",
+    "overlay-container": "git@github.com:sharedlabs/overlay-container.git",
     "paper-spinner": "PolymerElements/paper-spinner#2.0-preview",
-    "polymer": "git@github.com:Polymer/polymer#v2.0.0-rc.3",
+    "polymer": "Polymer/polymer#^2.0.0-rc.7",
     "selectable-item": "git@github.com:sharedlabs/selectable-item.git",
     "touch-slider": "git@github.com:sharedlabs/touch-slider.git"
   },
@@ -27,13 +28,7 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "resolutions": {
-    "webcomponentsjs": "^v1.0.0-rc.5",
-    "polymer": "v2.0.0-rc.3",
-    "iron-iconset-svg": "2.0-preview",
-    "iron-icon": "2.0-preview",
-    "iron-flex-layout": "2.0-preview",
-    "iron-meta": "2.0-preview",
-    "iron-resizable-behavior": "2.0-preview",
-    "iron-image": "2.0-preview"
+    "polymer": "v2.0.0-rc.7",
+    "webcomponentsjs": "v1.0.0-rc.5"
   }
 }

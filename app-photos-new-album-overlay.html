@@ -13,7 +13,7 @@
 -->
 <dom-module id="app-photos-new-album-overlay">
   <template>
-    <style include="header-layout-styles form-styles btn-styles icon-btn-styles">
+    <style include="header-layout-styles form-styles box-styles btn-styles icon-btn-styles">
       :host {
         background: var(--goc-background-color);
         bottom: 0;
@@ -30,7 +30,7 @@
           <button
               class="icon-btn icon-btn--primary"
               on-click="_onCloseTapped"
-              title="[[localize('NewAlbumOverlay.Header.Button.Close')]]">
+              title="[[localize('Header.Button.Close')]]">
               <touch-item><iron-icon icon="close"></iron-icon></touch-item>
           </button>
 
@@ -47,13 +47,13 @@
       </div>
 
       <div class="header-layout__content">
-        <div class="form">
+        <div class="form box">
           <div class="form__item form__item--last">
-            <label class="form__label">[[localize('NewAlbumOverlay.Form.TitleLabel')]]</label>
+            <label class="form__label">[[localize('Form.TitleLabel')]]</label>
             <input
                 id="titleInput"
                 class="form__input"
-                placeholder="[[localize('NewAlbumOverlay.Form.TitleLabel')]]"
+                placeholder="[[localize('Form.TitleLabel')]]"
                 value$="[[album.title]]"
                 on-keyup="_validate">
           </div>
@@ -80,7 +80,29 @@
 
           language: String,
 
-          resources: Object,
+          resources: {
+            type: Object,
+            value: _ => {
+              return {
+                "en": {
+                  "Form.TitleLabel": "Album title",
+                  "Header.Button.Close": "Close",
+                  "Header.CreateTitle": "Create album",
+                  "Header.EditTitle": "Edit album",
+                  "Header.SubmitCreate": "Create album",
+                  "Header.SubmitEdit": "Save"
+                },
+                "es": {
+                  "Form.TitleLabel": "Título del álbum",
+                  "Header.Button.Close": "Cerrar",
+                  "Header.CreateTitle": "Crear álbum",
+                  "Header.EditTitle": "Editar álbum",
+                  "Header.SubmitCreate": "Crear álbum",
+                  "Header.SubmitEdit": "Guardar"
+                }
+              };
+            }
+          },
         };
       }
 
@@ -152,16 +174,16 @@
 
       _computeHeaderTitle(album) {
         if (album) {
-          return this.localize('NewAlbumOverlay.Header.EditTitle');
+          return this.localize('Header.EditTitle');
         }
-        return this.localize('NewAlbumOverlay.Header.CreateTitle');
+        return this.localize('Header.CreateTitle');
       }
 
       _computeHeaderSubmit(album) {
         if (album) {
-          return this.localize('NewAlbumOverlay.Header.SubmitEdit');
+          return this.localize('Header.SubmitEdit');
         }
-        return this.localize('NewAlbumOverlay.Header.SubmitCreate');
+        return this.localize('Header.SubmitCreate');
       }
 
     }
