@@ -1,45 +1,47 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
-<link rel="import" href="../app-route/app-location.html">
 <link rel="import" href="../app-route/app-route.html">
-<link rel="import" href="../dropdown-menu/dropdown-menu-container.html">
-<link rel="import" href="../fluid-grid/fluid-grid.html">
-<link rel="import" href="../goc-apps/goc-app-icon.html">
-<link rel="import" href="../goc-apps/goc-apps-collection.html">
-<link rel="import" href="../goc-icons/goc-icons.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../goc-toolbar-layout/goc-toolbar-layout.html">
+<link rel="import" href="../goc-buttons/goc-icon-button.html">
 <link rel="import" href="../input-file/input-file.html">
+<link rel="import" href="../dropdown-menu/dropdown-menu-container.html">
 <link rel="import" href="../iron-image/iron-image.html">
-<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../selectable-item/selectable-group.html">
-<link rel="import" href="../offthread-image/offthread-image.html">
-<link rel="import" href="app-photos-new-album-overlay.html">
+<link rel="import" href="../iron-list/iron-list.html">
 
-<!--
-`app-photos-album-page`
-
-
-@demo demo/app-photos-album-page.html
--->
 <dom-module id="app-photos-album-page">
   <template>
-    <style include="header-layout-styles missing-well-styles btn-styles icon-btn-styles">
+    <style include="missing-well-styles">
       :host {
         background: var(--goc-background-color);
         display: block;
         height: 100%;
       }
 
-      .header-layout__content {
-        max-width: 100%;
-        padding: 0;
-      }
-
       #inputFile {
         display: none;
       }
 
-      .disabled-message {
+      iron-list {
+        height: 100%;
+      }
+
+      .photo {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 160px;
+        height: 160px;
+      }
+
+      .photo__iron-image {
+        width: calc(100% - 8px);
+        height: calc(100% - 8px);
+      }
+
+      /* disabled album message */
+      .disabled-album-notice {
         background: var(--paper-grey-300);
         border-radius: 4px;
         box-sizing: border-box;
@@ -50,35 +52,12 @@
         padding: 10px 20px;
         text-align: center;
       }
-
-      fluid-grid {
-        margin-left: 4px;
-      }
-
-      selectable-item {
-        background: var(--paper-grey-200);
-        cursor: pointer;
-        display: inline-block;
-        float: left;
-        margin: 4px 4px 0 0;
-      }
-
-      .photo__iron-image {
-        background: #e8e8e8;
-        height: 100%;
-        width: 100%;
-        --iron-image-placeholder: {
-          background: var(--paper-grey-300);
-        }
-      }
     </style>
-
-    <app-location route="{{route}}" use-hash-as-path></app-location>
 
     <app-route
         route="[[route]]"
-        pattern="/album/:albumTitle"
-        data="{{routeData}}"></app-route>
+        pattern="/:albumTitle"
+        data="{{_routeData}}"></app-route>
 
     <input-file
         id="inputFile"
@@ -86,109 +65,95 @@
         on-files-selected="_onFilesSelected"
         on-files-loaded="_onFilesLoaded"></input-file>
 
-    <div class="header-layout">
-      <div class="header-layout__header">
-        <div class="header-toolbar">
-          <button
-              class="icon-btn icon-btn--primary"
-              on-click="_onBackTapped"
-              title="[[localize('EditorPage.Header.BackButton')]]">
-              <touch-item><iron-icon icon="arrow-back"></iron-icon></touch-item>
-          </button>
+    <goc-toolbar-layout full-width>
 
-          <div class="header-toolbar__main-content">
-            <div class="header-toolbar__title">[[album.title]]</div>
-            <div class="header-toolbar__subtitle">
-              [[_computeAlbumLengthText(album.photos.length, localize, visible)]]
-              [[_computeAlbumEnabledText(album.enabled, localize)]]
-            </div>
-          </div>
+      <!-- main toolbar -->
+      <goc-toolbar
+          slot="toolbar"
+          heading="[[_album.title]]"
+          subheading="[[_computedSubheading(_album.photos.length, _album.enabled, localize, visible)]]"
+          loading="[[loading]]">
 
-          <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
+        <goc-icon-button
+            slot="toolbar-left"
+            icon="arrow-back"
+            theme="primary"
+            on-click="_onBackTapped"></goc-icon-button>
 
-          <button
-              class="icon-btn icon-btn--primary"
-              on-click="_onSelectFilesTapped"
-              title="[['AlbumPage.Header.UploadPhotos.AriaLabel']]">
-              <touch-item><iron-icon icon="add-photo"></iron-icon></touch-item>
-          </button>
+        <goc-icon-button
+            slot="toolbar-right"
+            icon="add-photo"
+            theme="primary"
+            on-click="_onSelectFilesTapped"
+            title="[[localize('AddPhotosButton.title')]]"></goc-icon-button>
 
-          <dropdown-menu-container>
-            <button
-                class="icon-btn icon-btn--primary"
-                title="[[localize('AlbumMenu.AriaLabel')]]">
-                <touch-item><iron-icon icon="dots-vertical"></iron-icon></touch-item>
-            </button>
+        <dropdown-menu-container slot="toolbar-right">
+          <goc-icon-button
+              icon="dots-vertical"
+              theme="primary"
+              title="[[localize('MoreMenu.Title')]]"></goc-icon-button>
 
-            <template is="dom-template">
-              <button on-click="_onSelectAll">[[localize('AlbumPage.MoreMenu.SelectAll')]]</button>
-              <button on-click="_onToggleEnableAlbumTapped">[[_computeToggleAlbumText(album.enabled)]]</button>
-              <button on-click="_onEditAlbumTapped">[[localize('AlbumMenu.Edit')]]</button>
-              <button on-click="_onDeleteAlbumTapped">[[localize('AlbumMenu.Delete')]]</button>
-            </template>
-          </dropdown-menu-container>
-        </div>
-
-        <div class$="[[_computeSecondaryToolbarClass(activeSelection)]]">
-          <button
-              class="icon-btn icon-btn--primary"
-              on-click="_onCancelSelection"
-              title="[[localize('AlbumPage.SelectionToolbar.CancelSelection')]]">
-              <touch-item><iron-icon icon="close"></iron-icon></touch-item>
-          </button>
-
-          <div class="header-toolbar__main-content">
-            <div class="header-toolbar__title">[[selection.length]]</div>
-          </div>
-
-          <button
-              class="icon-btn icon-btn--primary"
-              on-click="_onRemoveSelectionTapped"
-              title="[[localize('AlbumPage.SelectionToolbar.RemoveSelectedPhotos')]]">
-              <touch-item><iron-icon icon="delete"></iron-icon></touch-item>
-          </button>
-        </div>
-      </div>
-
-      <div class="header-layout__content">
-        <dom-if if="[[_computeIsDisabled(album.enabled)]]">
-          <template>
-            <div class="disabled-message">[[localize('AlbumPage.DisabledMessage')]]</div>
+          <template is="dom-template">
+            <button on-click="_selectAllPhotos">[[localize('MoreMenu.SelectAll')]]</button>
+            <button on-click="_onToggleEnableAlbumTapped">[[_computedToggleAlbumText(album.enabled)]]</button>
+            <button on-click="_onEditAlbumTapped">[[localize('MoreMenu.Edit')]]</button>
+            <button on-click="_onDeleteAlbumTapped">[[localize('MoreMenu.Delete')]]</button>
           </template>
-        </dom-if>
+        </dropdown-menu-container>
+      </goc-toolbar>
+      
+      <!-- selection toolbar -->
+      <goc-toolbar
+          slot="toolbar"
+          heading="[[selection.length]]"
+          active="[[_activeSelection]]"
+          theme="primary">
 
-        <fluid-grid
-            item-selector=".photo"
-            container-selector="selectable-group"
-            min-width="160px"
-            margin-width="4px"
-            visible="[[visible]]"
-            auto-height>
-          <selectable-group id="selectableGroup" active-selection="{{activeSelection}}">
-            <dom-repeat id="domRepeat" items="[[_computedDomRepeat(album.photos.*, _isAttached, visible)]]" as="photo">
-              <template>
-                <selectable-item class="photo">
-                  <offthread-image
-                      class="photo__iron-image"
-                      src="[[_computedThumbnailUrl(photo.images)]]"
-                      preload
-                      sizing="cover"
-                      on-error="_imageLoadError"></offthread-image>
-                </selectable-item>
-              </template>
-            </dom-repeat>
-          </selectable-group>
-        </fluid-grid>
+        <goc-icon-button
+            slot="toolbar-left"
+            icon="close"
+            title="[[localize('SelectionToolbar.CancelSelection')]]"
+            on-click="_onCancelSelection"></goc-icon-button>
 
-        <dom-if if="[[!album.photos.length]]">
+        <goc-icon-button
+            slot="toolbar-right"
+            icon="delete"
+            title="[[localize('SelectionToolbar.RemoveSelectedPhotos')]]"
+            on-click="_onRemoveSelectionTapped"></goc-icon-button>
+
+      </goc-toolbar>
+
+      <!-- content start here -->
+      <dom-if if="[[_computedIsDisabled(_album.enabled)]]">
+        <template>
+          <div class="disabled-album-notice">[[localize('DisabledAlbumNotice')]]</div>
+        </template>
+      </dom-if>
+
+      <dom-if if="[[_computedMisingPhotosIf(_album, _album.photos.length)]]">
+        <template>
+          <div class="missing-well">
+            <div class="missing-well__title">[[localize('EmptyPhotos.Title')]]</div>
+          </div>
+        </template>
+      </dom-if>
+
+      <selectable-group id="selectableGroup" active-selection="{{_activeSelection}}">
+        <iron-list items="[[_album.photos]]" grid>
           <template>
-            <div class="missing-well">
-              <div class="missing-well__title">[[localize('AlbumPage.MissingPhotos.Title')]]</div>
-            </div>
+            <selectable-item class="photo">
+              <iron-image
+                  class="photo__iron-image"
+                  src="[[_computedThumbnailUrl(item.images)]]"
+                  preload
+                  sizing="cover"
+                  on-error="_imageLoadError"></iron-image>
+            </selectable-item>
           </template>
-        </dom-if>
-      </div>
-    </div>
+        </iron-list>
+      </selectable-group>
+
+    </goc-toolbar-layout>
 
   </template>
 
@@ -200,215 +165,86 @@
 
       static get properties() {
         return {
-          albums: {
-            type: Array,
-            notify: true
-          },
 
-          album: Object,
-
-          activeSelection: {
-            type: Boolean,
-            value: false
-          },
-
-          visible: Boolean,
+          data: Object,
 
           contentId: String,
 
-          language: {
-            type: String,
-            value: 'en'
-          },
+          language: String,
 
-          resources: Object,
+          visible: Boolean,
 
-          _uploadedFiles: {
+          resources: {
             type: Object,
             value: _ => {
-              return {};
+              return {
+                "en": {
+                  "AddPhotosButton.title": "Add photos",
+                  "MoreMenu.Title": "More",
+                  "MoreMenu.SelectAll": "Select all",
+                  "MoreMenu.Edit": "Edit details",
+                  "MoreMenu.Delete": "Delete album",
+                  "MoreMenu.Enable": "Enable album",
+                  "MoreMenu.Enable": "Disable album",
+                  "SelectionToolbar.CancelSelection": "Cancel selection",
+                  "SelectionToolbar.RemoveSelectedPhotos": "Remove selected photos",
+                  "EmptyPhotos.Title": "This album is empty.",
+                  "DisabledAlbumNotice": "This album is disabled. These photos won't be displayed.",
+                  "Toolbar.PhotosLength": "{length} photos",
+                  "Toolbar.Disabled": "Disabled"
+                },
+                "es": {
+
+                }
+              };
             }
           },
 
-          // Number of files being uploaded
-          _uploadingFiles: {
-            type: Number,
-            value: 0
-          },
+          route: Object,
 
-          _isAttached: Boolean
+          _album: Object,
+
+          _routeData: Object,
+
+          _activeSelection: {
+            type: Boolean,
+            value: false
+          }
 
         };
       }
 
       static get observers() {
         return [
-          '_routePageChanged(routeData.albumTitle, albums, visible)',
+          '_routePageChanged(_routeData.albumTitle, data.albums.*, visible)',
         ];
       }
 
       constructor() {
         super();
-        this._saveChangesTimeout = null;
         this._newAlbumOverlay = null;
+        this._uploadedFiles = {};
+        this._uploadingFiles = 0;
       }
 
-      connectedCallback() {
-        super.connectedCallback();
-        requestAnimationFrame(_ => this._isAttached = true);
-      }
-
-      disconnectedCallback() {
-        super.disconnectedCallback();
-        this._isAttached = false;
-      }
-
-      _routePageChanged(albumTitle, albums, visible) {
-        if (!albumTitle || !albums || !visible) {return;}
-
-        if (!this.visible) {
-          this.album = {};
-          return;
+      _routePageChanged(albumTitle, albumsChange, visible) {
+        if (!visible) {
+          this._album = {};
+        } else {
+          this._album = (this.data.albums || []).filter(a => {
+            return String(a.title).trim() === String(albumTitle).trim();
+          })[0];
         }
-
-        this.album = (this.albums || []).filter(a => {
-          return String(a.title).trim() === String(albumTitle).trim();
-        })[0];
-
-        // setTimeout(_ => {
-        //   if (!this.album) {
-        //     this._historyPushState('#');
-        //   }
-        // }, 10);
       }
 
-      _onSelectAll() {
-        this.$.selectableGroup.items.forEach(item => {
-          item.selected = true;
-        });
-      }
-
-      _onCancelSelection() {
-        this.$.selectableGroup.selection.forEach(item => {
-          item.selected = false;
-        });
+      _selectAllPhotos() {
       }
 
       _onSelectFilesTapped() {
         this.$.inputFile.selectFiles();
       }
 
-      _onBackTapped() {
-        this._historyPushState('#');
-      }
-
-      _onRemoveSelectionTapped() {
-        requestAnimationFrame(_ => {
-          const selection = this.$.selectableGroup.selection;
-          this._onCancelSelection();
-
-          selection.forEach(el => {
-            const album = this.$.domRepeat.itemForElement(el);
-            this.splice('album.photos', this.album.photos.indexOf(album), 1);
-          });
-
-          this.$.domRepeat.render();
-          this._triggerUpdate({inmediate: true});
-        });
-      }
-
-      _onToggleEnableAlbumTapped(event) {
-        this.set('album.enabled', this.album.enabled === false ? true : false);
-        this._triggerUpdate({inmediate: true});
-      }
-
-      _onEditAlbumTapped(event) {
-        if (this._newAlbumOverlay) {
-          return;
-        }
-
-        const overlay = document.createElement('app-photos-new-album-overlay');
-        overlay.open();
-        overlay.albums = this.albums;
-        overlay.album = this.album;
-        overlay.language = this.language;
-        overlay.resources = this.resources;
-        overlay.onDetach = _ => this._newAlbumOverlay = null;
-        overlay.addEventListener('overlay-closed', event => {
-          if (!event.currentTarget.canceled) {
-            const title = event.currentTarget.$.titleInput.value;
-            this.set('album.title', title);
-            this._triggerUpdate({inmediate: true});
-          }
-        });
-        this._newAlbumOverlay = overlay;
-      }
-
-      _onDeleteAlbumTapped(event) {
-        if (confirm('Delete this album?')) {
-          this.splice('albums', this.albums.indexOf(this.album), 1);
-          this._triggerUpdate({inmediate: true});
-        }
-      }
-
-      _triggerUpdate({inmediate=false} = {}) {
-        if (inmediate) {
-          clearTimeout(this._saveChangesTimeout);
-          this.dispatchEvent(new Event('trigger-update', {composed: true}));
-        } else {
-          this._saveChangesTimeout = setTimeout(_ => {
-            this.dispatchEvent(new Event('trigger-update', {composed: true}));
-          }, 4000);
-        }
-      }
-
-      _historyPushState(url) {
-        window.history.pushState({}, null, url);
-        window.dispatchEvent(new CustomEvent('location-changed'));
-      }
-
-      _computedDomRepeat(albumChanges, isAttached, visible) {
-        if (!visible || !isAttached) {return}
-        if (this.album && this.album.photos && this.album.photos.length) {
-          return this.album.photos;
-        }
-        return [];
-      }
-
-      _computeAlbumLengthText(photosLength) {
-        photosLength = photosLength || 0;
-        return this.localize('AlbumDetails.PhotosLength', 'length', String(photosLength));
-      }
-
-      _computeAlbumEnabledText(enabled) {
-        if (enabled === false) {
-          return ' · ' + this.localize('AlbumDetails.Disabled');
-        }
-      }
-
-      _computeToggleAlbumText(enabled) {
-        if (enabled === false) {
-          return this.localize('AlbumMenu.Enable');
-        }
-        return this.localize('AlbumMenu.Disable');
-      }
-
-      _computedThumbnailUrl(images) {
-        if (images) {
-          // Get smallest one. When no width, is the original (we consider it
-          // the  biggest)
-          return images.sort((a,b) => {
-            return (a.width || Infinity) - (b.width || Infinity);
-          })[0].url;
-        }
-      }
-
-      _computeIsDisabled(enabled) {
-        return enabled === false;
-      }
-
-      // File upload
-      _onFilesSelected(event) {
+      _onFilesSelected() {
         const files = event.detail.files;
 
         event.detail.thumbnailSizes = [
@@ -418,17 +254,16 @@
         this._uploadingFiles = this._uploadingFiles + files.length;
       }
 
-      _onFilesLoaded(event) {
+      _onFilesLoaded() {
         const files = event.detail.files;
 
-        // what when there is an error?
+        // what to do when there is an error?
         for (let i = 0; i < files.length; i++) {
           this._uploadingFiles --;
 
           const file = files[i];
 
           // Falta guarda en el data el tamaño de la imagen original
-          // Luego
           if (file.images) {
             const parts = file.name.split('.');
             parts.pop();
@@ -436,51 +271,75 @@
             this._uploadedFiles[filename] = file;
 
             requestAnimationFrame(_ => {
-              this.push('album.photos', {images: file.images});
-              this.$.domRepeat.render();
+              if (!this._album.photos) {
+                this._album.photos = [];
+              }
 
-              // save inmediately every 3 at least
-              // and every single one let the debounce be
-              this._triggerUpdate({
-                inmediate: this._uploadingFiles % 3 === 0
-              });
+              this.push('_album.photos', {images: file.images});
+
+              this.dispatchEvent(new Event('trigger-update', {
+                composed: true,
+                bubbles: true,
+                detail: {
+                  // save inmediately every 3 photos at least
+                  inmediate: this._uploadingFiles % 3 === 0
+                }
+              }));
             });
           }
         }
       }
 
-      _imageLoadError(event) {
-        const item = event.model.photo;
-        const images = item.images;
-
-        if (!images) {
-          return;
-        }
-
-        const original = images.find(item => {
-          const reg = new RegExp(`-${item.width}-${item.height}\\.\\w+`);
-          return !item.url.match(reg);
-        });
-
-        const filename = original.url.match(/\/([^\/]*)$/)[1];
-        const parts = filename.split('.');
-        parts.pop();
-        const name = parts.join('.');
-        const file = this._uploadedFiles[name];
-
-        if (file) {
-          const tmpUrl = URL.createObjectURL(file);
-          event.currentTarget.src = tmpUrl;
-          this._uploadedFiles[name] = null;
-        }
+      _onBackTapped() {
+        window.history.pushState({}, null, '#');
+        window.dispatchEvent(new CustomEvent('location-changed'));
       }
 
-      _computeSecondaryToolbarClass(activeSelection) {
-        let classAttr = 'header-toolbar header-toolbar--secondary';
-        if (activeSelection) {
-          classAttr += ' header-toolbar--active';
+      _onToggleEnableAlbumTapped(event) {
+        this.set('_album.enabled', this._album.enabled === false ? true : false);
+
+        this.dispatchEvent(new Event('trigger-update', {
+          composed: true,
+          bubbles: true
+        }));
+      }
+
+      _computedThumbnailUrl(images) {
+        if (images) {
+          // Get smallest one. When no width, is the original (we consider it
+          // the  biggest)
+          return images.sort((a,b) => {
+            return (a.width || Infinity) - (b.width || Infinity);
+          })[0].url;
+        }        
+      }
+
+      _computedIsDisabled(enabled) {
+        return enabled === false;
+      }
+
+      _computedMisingPhotosIf(_album, photosLength) {
+        if (_album && !photosLength) {
+          return true;
         }
-        return classAttr;
+        return false;
+      }
+
+      _computedToggleAlbumText(albumEnabled) {
+        if (enabled === false) {
+          return this.localize('MoreMenu.Enable');
+        }
+        return this.localize('MoreMenu.Disable');
+      }
+
+      _computedSubheading(photosLength, albumEnabled, localize, visible) {
+        let subheading = this.localize('Toolbar.PhotosLength', 'length', String(photosLength || 0));
+
+        if (albumEnabled === false) {
+          subheading += ' · ' + this.localize('Toolbar.Disabled');
+        }
+
+        return subheading;
       }
 
     }

@@ -1,14 +1,15 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
-<link rel="import" href="../iron-list/iron-list.html">
-<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../goc-toolbar-layout/goc-app-toolbar.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../goc-buttons/goc-button.html">
+<link rel="import" href="../iron-list/iron-list.html">
 
 <link rel="import" href="app-photos-new-album-overlay.html">
 
 <dom-module id="app-photos-albums-page">
   <template>
-    <style include="header-styles btn-styles icon-btn-styles missing-well-styles">
+    <style include="missing-well-styles">
       :host {
         background: var(--goc-background-color);
         display: block;
@@ -23,34 +24,22 @@
       iron-list {
         height: 100%;
       }
-
     </style>
 
-    <goc-toolbar-layout
-        left-icon="arrow-back"
-        on-left-icon-tapped="_closeApp"
-        heading="[[contentName]]"
-        subheading="[[appInfo.displayName]]"
-        app-icon="photos">
+    <goc-toolbar-layout>
+      <goc-app-toolbar
+          slot="toolbar"
+          content-name="[[contentName]]"
+          app-name="photos"
+          language="[[language]]">
 
-      <div slot="toolbar-right-container">
-        <button class="btn btn--primary" on-click="_createAlbumTapped">
-          <touch-item>[[localize('Header.CreateAlbum')]]</touch-item>
-        </button>  
-      </div>
+        <goc-button
+            slot="toolbar-right"
+            on-click="_createAlbumTapped"
+            theme="primary">[[localize('Header.CreateAlbum')]]</goc-button>
+      </goc-app-toolbar>
 
-      <div slot="content">
-        <iron-list class="albums" items="albums">
-          <template>
-
-          </template>
-        </iron-list>        
-
-        <dom-if>
-          <template>
-          </template>
-        </dom-if>
-
+      <div class="albums">
       </div>
     </goc-toolbar-layout>
 
@@ -65,9 +54,7 @@
       static get properties() {
         return {
 
-          albums: {
-            type: Array,
-          },
+          data: Object,
 
           language: String,
 
@@ -98,20 +85,13 @@
         this._newAlbumOverlayClosed = this._newAlbumOverlayClosed.bind(this);
       }
 
-      _closeApp() {
-        this.dispatchEvent(new Event('close-app', {
-          bubbles: true,
-          composed: true
-        }));
-      }
-
       _createAlbumTapped() {
         if (this._newAlbumOverlay) {
           return;
         }
 
         const overlay = document.createElement('app-photos-new-album-overlay')
-        overlay.albums = this.albums;
+        overlay.albums = this.data.albums;
         overlay.language = this.language;
         overlay.onDetach = _ => this._newAlbumOverlay = null;
 
@@ -129,7 +109,7 @@
           window.history.pushState({}, null, `#/album/${title}`);
           window.dispatchEvent(new Event('location-changed'));
 
-          this.push('albums', {
+          this.push('data.albums', {
             title,
             enabled: true,
             photos: []

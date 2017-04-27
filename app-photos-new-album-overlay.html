@@ -1,6 +1,8 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
-<link rel="import" href="../goc-icons/goc-icons.html">
+<link rel="import" href="../goc-toolbar-layout/goc-toolbar-layout.html">
+<link rel="import" href="../goc-buttons/goc-icon-button.html">
+<link rel="import" href="../goc-buttons/goc-button.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
 <link rel="import" href="../overlay-container/animated-overlay-mixin.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
@@ -13,7 +15,7 @@
 -->
 <dom-module id="app-photos-new-album-overlay">
   <template>
-    <style include="header-layout-styles form-styles box-styles btn-styles icon-btn-styles">
+    <style include="form-styles box-styles">
       :host {
         background: var(--goc-background-color);
         bottom: 0;
@@ -24,42 +26,37 @@
       }
     </style>
 
-    <div class="header-layout">
-      <div class="header-layout__header">
-        <div class="header-toolbar">
-          <button
-              class="icon-btn icon-btn--primary"
-              on-click="_onCloseTapped"
-              title="[[localize('Header.Button.Close')]]">
-              <touch-item><iron-icon icon="close"></iron-icon></touch-item>
-          </button>
+    <goc-toolbar-layout>
+      <goc-toolbar
+          slot="toolbar"
+          heading="[[_computeHeaderTitle(album, localize)]]"
+          loading="[[loading]]">
+        
+        <goc-icon-button
+            slot="toolbar-left"
+            theme="primary"
+            icon="close"
+            on-click="_onCloseTapped"></goc-icon-button>
+        
+        <goc-button
+            slot="toolbar-right"
+            theme="primary"
+            on-click="_onSubmit">[[_computeHeaderSubmit(album, localize)]]</goc-button>
 
-          <div class="header-toolbar__main-content">
-            <div class="header-toolbar__title">[[_computeHeaderTitle(album, localize)]]</div>
-          </div>
+      </goc-toolbar>
 
-          <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
-
-          <button class="btn btn--primary" on-click="_onSubmit">
-            <touch-item>[[_computeHeaderSubmit(album, localize)]]</touch-item>
-          </button>
+      <!-- form -->
+      <div class="form box">
+        <div class="form__item form__item--last">
+          <label class="form__label">[[localize('Form.TitleLabel')]]</label>
+          <input
+              id="titleInput"
+              class="form__input"
+              value$="[[album.title]]"
+              on-keyup="_validate">
         </div>
       </div>
-
-      <div class="header-layout__content">
-        <div class="form box">
-          <div class="form__item form__item--last">
-            <label class="form__label">[[localize('Form.TitleLabel')]]</label>
-            <input
-                id="titleInput"
-                class="form__input"
-                placeholder="[[localize('Form.TitleLabel')]]"
-                value$="[[album.title]]"
-                on-keyup="_validate">
-          </div>
-        </div>
-      </div>
-    </div>
+    </goc-toolbar-layout>
 
   </template>
 
@@ -86,7 +83,6 @@
               return {
                 "en": {
                   "Form.TitleLabel": "Album title",
-                  "Header.Button.Close": "Close",
                   "Header.CreateTitle": "Create album",
                   "Header.EditTitle": "Edit album",
                   "Header.SubmitCreate": "Create album",
@@ -94,7 +90,6 @@
                 },
                 "es": {
                   "Form.TitleLabel": "Título del álbum",
-                  "Header.Button.Close": "Cerrar",
                   "Header.CreateTitle": "Crear álbum",
                   "Header.EditTitle": "Editar álbum",
                   "Header.SubmitCreate": "Crear álbum",

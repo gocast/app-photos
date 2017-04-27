@@ -29,18 +29,22 @@
     <app-route
         route="[[route]]"
         pattern="/:page"
-        data="{{routeData}}"></app-route>
+        data="{{routeData}}"
+        tail="{{subroute}}"></app-route>
     
-    <iron-pages selected="[[page]]" attr-for-selected="name">
+    <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="visible">
       <app-photos-albums-page
           name="albums"
-          albums="[[data.albums]]"
+          data="{{data}}"
           content-name="[[contentName]]"
           language="[[language]]"></app-photos-albums-page>
 
       <app-photos-album-page
           name="album"
-          language="[[language]]"></app-photos-album-page>
+          content-id="[[contentId]]"
+          data="[[data]]"
+          language="[[language]]"
+          route="{{subroute}}"></app-photos-album-page>
     </iron-pages>
 
   </template>
@@ -58,24 +62,26 @@
 
           route: Object,
 
+          subroute: Object,
+
           page: String,
 
           data: {
             type: Object,
             value: _ => {
-              return {albums: []}
+              return {albums: []};
             }
           },
 
           release: Object,
-
-          contentId: String,
 
           dataUpdatedAt: Number,
 
           releaseUpdatedAt: Number,
 
           contentName: String,
+
+          contentId: String,
 
           loading: {
             type: Boolean,
@@ -99,6 +105,7 @@
 
       constructor() {
         super();
+        this._contentUpdateTimeout = null;
         this._onTriggerUpdate = this._onTriggerUpdate.bind(this);
       }
 
@@ -127,7 +134,18 @@
         }
       }
 
-      _onTriggerUpdate() {
+      _onTriggerUpdate(event) {
+        if (event.detail && event.detail.inmediate) {
+          clearTimeout(this._contentUpdateTimeout);
+          this._contentUpdate();
+        } else {
+          this._contentUpdateTimeout = setTimeout(_ => {
+            this._contentUpdate();
+          }, 4000);
+        }
+      }
+
+      _contentUpdate() {
         this.dispatchEvent(new CustomEvent('content-update', {
           composed: true,
           detail: {
@@ -135,7 +153,7 @@
             contentId: this.contentId,
             updateRelease: true,
           }
-        }));
+        }));        
       }
 
     }
