@@ -9,6 +9,7 @@
 <link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../selectable-item/selectable-group.html">
 <link rel="import" href="../iron-list/iron-list.html">
+<link rel="import" href="app-photos-new-album-overlay.html">
 
 <dom-module id="app-photos-album-page">
   <template>
@@ -17,6 +18,10 @@
         background: var(--goc-background-color);
         display: block;
         height: 100%;
+      }
+
+      [hidden] {
+        display: none !important;
       }
 
       #inputFile {
@@ -64,7 +69,7 @@
         content-id$="[[contentId]]"
         on-files-selected="_onFilesSelected"
         on-files-loaded="_onFilesLoaded"></input-file>
-
+    
     <goc-toolbar-layout full-width>
 
       <!-- main toolbar -->
@@ -78,7 +83,7 @@
             slot="toolbar-left"
             icon="arrow-back"
             theme="primary"
-            on-click="_onBackTapped"></goc-icon-button>
+            on-click="_goToAlbums"></goc-icon-button>
 
         <goc-icon-button
             slot="toolbar-right"
@@ -119,7 +124,7 @@
             slot="toolbar-right"
             icon="delete"
             title="[[localize('SelectionToolbar.RemoveSelectedPhotos')]]"
-            on-click="_onRemoveSelectionTapped"></goc-icon-button>
+            on-click="_removeSelectedPhotos"></goc-icon-button>
 
       </goc-toolbar>
 
@@ -130,7 +135,7 @@
         </template>
       </dom-if>
 
-      <dom-if if="[[_computedMisingPhotosIf(_album, _album.photos.length)]]">
+      <dom-if if="[[_computedEmptyPhotos(_album, _album.photos.length)]]">
         <template>
           <div class="missing-well">
             <div class="missing-well__title">[[localize('EmptyPhotos.Title')]]</div>
@@ -138,9 +143,15 @@
         </template>
       </dom-if>
 
-      <selectable-group id="selectableGroup" selection="{{_selection}}">
-        <iron-list items="[[_album.photos]]" grid>
+      <!-- List of photos -->
+      <selectable-group
+          id="selectableGroup"
+          selection="{{_selection}}"
+          hidden="[[_computedEmptyPhotos(_album, _album.photos.length)]]">
+
+        <iron-list id="ironList" items="[[_album.photos]]" grid>
           <template>
+            <!-- photo element -->
             <selectable-item class="photo">
               <iron-image
                   class="photo__iron-image"
@@ -250,6 +261,52 @@
         });
       }
 
+      _removeSelectedPhotos() {
+        requestAnimationFrame(_ => {
+          const selection = this._selection.slice(0);
+          this._cancelSelection();
+
+          selection.forEach(el => {
+            const photo = this.$.ironList.modelForElement(el).item;
+            this.splice('_album.photos', this._album.photos.indexOf(photo), 1);
+          });
+
+          this._dispatchTriggerUpdate();
+        });
+      }
+
+      _onEditAlbumTapped() {
+        if (this._newAlbumOverlay) {
+          return;
+        }
+
+        const overlay = document.createElement('app-photos-new-album-overlay');
+        overlay.open();
+        overlay.albums = this.data.albums;
+        overlay.album = this._album;
+        overlay.language = this.language;
+        overlay.resources = this.resources;
+        overlay.onDetach = _ => this._newAlbumOverlay = null;
+
+        overlay.addEventListener('overlay-closed', event => {
+          if (!event.currentTarget.canceled) {
+            const title = event.currentTarget.$.titleInput.value;
+            this.set('album.title', title);
+            this._triggerUpdate({inmediate: true});
+          }
+        });
+
+        this._newAlbumOverlay = overlay;
+      }
+
+      _onDeleteAlbumTapped(event) {
+        if (confirm('Delete this album?')) {
+          this.splice('data.albums', this.data.albums.indexOf(this._album), 1);
+          this._dispatchTriggerUpdate();
+          this._goToAlbums();
+        }
+      }
+
       _onSelectFilesTapped() {
         this.$.inputFile.selectFiles();
       }
@@ -287,20 +344,15 @@
 
               this.push('_album.photos', {images: file.images});
 
-              this.dispatchEvent(new Event('trigger-update', {
-                composed: true,
-                bubbles: true,
-                detail: {
-                  // save inmediately every 3 photos at least
-                  inmediate: this._uploadingFiles % 3 === 0
-                }
-              }));
+              this._dispatchTriggerUpdate({
+                inmediate: this._uploadingFiles % 3 === 0
+              });
             });
           }
         }
       }
 
-      _onBackTapped() {
+      _goToAlbums() {
         window.history.pushState({}, null, '#');
         window.dispatchEvent(new CustomEvent('location-changed'));
       }
@@ -308,9 +360,16 @@
       _onToggleEnableAlbumTapped(event) {
         this.set('_album.enabled', this._album.enabled === false ? true : false);
 
+
+      }
+
+      _dispatchTriggerUpdate({inmediate = true} = {}) {
         this.dispatchEvent(new Event('trigger-update', {
           composed: true,
-          bubbles: true
+          bubbles: true,
+          detail: {
+            inmediate: inmediate
+          }
         }));
       }
 
@@ -332,7 +391,7 @@
         return enabled === false;
       }
 
-      _computedMisingPhotosIf(_album, photosLength) {
+      _computedEmptyPhotos(_album, photosLength) {
         if (_album && !photosLength) {
           return true;
         }
