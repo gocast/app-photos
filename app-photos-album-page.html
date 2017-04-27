@@ -95,7 +95,7 @@
 
           <template is="dom-template">
             <button on-click="_selectAllPhotos">[[localize('MoreMenu.SelectAll')]]</button>
-            <button on-click="_onToggleEnableAlbumTapped">[[_computedToggleAlbumText(album.enabled)]]</button>
+            <button on-click="_onToggleEnableAlbumTapped">[[_computedToggleAlbumText(_album.enabled)]]</button>
             <button on-click="_onEditAlbumTapped">[[localize('MoreMenu.Edit')]]</button>
             <button on-click="_onDeleteAlbumTapped">[[localize('MoreMenu.Delete')]]</button>
           </template>
@@ -105,15 +105,15 @@
       <!-- selection toolbar -->
       <goc-toolbar
           slot="toolbar"
-          heading="[[selection.length]]"
-          active="[[_activeSelection]]"
+          heading="[[_selection.length]]"
+          active="[[_computedBoolean(_selection.length)]]"
           theme="primary">
 
         <goc-icon-button
             slot="toolbar-left"
             icon="close"
             title="[[localize('SelectionToolbar.CancelSelection')]]"
-            on-click="_onCancelSelection"></goc-icon-button>
+            on-click="_cancelSelection"></goc-icon-button>
 
         <goc-icon-button
             slot="toolbar-right"
@@ -138,7 +138,7 @@
         </template>
       </dom-if>
 
-      <selectable-group id="selectableGroup" active-selection="{{_activeSelection}}">
+      <selectable-group id="selectableGroup" selection="{{_selection}}">
         <iron-list items="[[_album.photos]]" grid>
           <template>
             <selectable-item class="photo">
@@ -185,7 +185,7 @@
                   "MoreMenu.Edit": "Edit details",
                   "MoreMenu.Delete": "Delete album",
                   "MoreMenu.Enable": "Enable album",
-                  "MoreMenu.Enable": "Disable album",
+                  "MoreMenu.Disable": "Disable album",
                   "SelectionToolbar.CancelSelection": "Cancel selection",
                   "SelectionToolbar.RemoveSelectedPhotos": "Remove selected photos",
                   "EmptyPhotos.Title": "This album is empty.",
@@ -206,9 +206,9 @@
 
           _routeData: Object,
 
-          _activeSelection: {
-            type: Boolean,
-            value: false
+          _selection: {
+            type: Array,
+            value: _ => []
           }
 
         };
@@ -222,6 +222,7 @@
 
       constructor() {
         super();
+
         this._newAlbumOverlay = null;
         this._uploadedFiles = {};
         this._uploadingFiles = 0;
@@ -238,6 +239,15 @@
       }
 
       _selectAllPhotos() {
+       this.$.selectableGroup.items.forEach(selectableItem => {
+          selectableItem.selected = true;
+        });
+      }
+
+      _cancelSelection() {
+        this._selection.forEach(selectableItem => {
+          selectableItem.selected = false;
+        });
       }
 
       _onSelectFilesTapped() {
@@ -304,6 +314,10 @@
         }));
       }
 
+      _computedBoolean(value) {
+        return !!value;
+      }
+
       _computedThumbnailUrl(images) {
         if (images) {
           // Get smallest one. When no width, is the original (we consider it
@@ -326,7 +340,7 @@
       }
 
       _computedToggleAlbumText(albumEnabled) {
-        if (enabled === false) {
+        if (albumEnabled === false) {
           return this.localize('MoreMenu.Enable');
         }
         return this.localize('MoreMenu.Disable');
