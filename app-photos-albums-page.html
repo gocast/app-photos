@@ -206,7 +206,7 @@
       }
 
       _computedDomRepeatItems(data, visible) {
-        if (visible) {
+        if (visible && data) {
           return data.albums;
         }
         return [];

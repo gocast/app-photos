@@ -240,7 +240,8 @@
         if (!visible) {
           this._album = {};
         } else {
-          this._album = (this.data.albums || []).filter(a => {
+          const albums = (this.data && this.data.albums) ? this.data.albums : [];
+          this._album = albums.filter(a => {
             return String(a.title).trim() === String(albumTitle).trim();
           })[0];
         }
