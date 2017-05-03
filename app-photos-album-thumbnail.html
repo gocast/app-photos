@@ -1,0 +1,201 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
+<link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../goc-buttons/goc-icon-button.html">
+<link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../dropdown-menu/dropdown-menu-container.html">
+
+<link rel="import" href="app-photos-new-album-overlay.html">
+
+<dom-module id="app-photos-album-thumbnail">
+  <template>
+    <style>
+      :host {
+        display: block;
+        overflow: hidden;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+      
+      a, iron-image {
+        height: 100%;
+        width: 100%;
+      }
+
+      a {
+        background-color: var(--paper-grey-500);
+        display: block;
+        position: relative;
+        text-decoration: none;
+      }
+
+      iron-image[disabled] {
+        filter: grayscale(100%);
+        opacity: 0.4;        
+      }
+
+      .gradient {
+        background-image: -webkit-linear-gradient(to bottom,transparent,rgba(0,0,0,0.74));
+        background-image: linear-gradient(to bottom,transparent,rgba(0,0,0,0.74));
+        bottom: 0;
+        content: '';
+        height: 160px;
+        position: absolute;
+        width: 100%;
+      }
+
+      .detail {
+        bottom: 24px;
+        left: 24px;
+        position: absolute;
+        right: 24px;
+        color: white;
+      }
+
+      .detail__title {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 4px 0;
+      }
+
+      dropdown-menu-container {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+      }
+
+      goc-icon-button {
+        color: white;
+      }
+    </style>
+
+    <a href$="#/album/[[album.title]]">
+      <iron-image
+          disabled$="[[!album.enabled]]"
+          sizing="cover"
+          src="[[_computedAlbumImgSrc(album.photos.0)]]"></iron-image>
+      
+      <div class="gradient" hidden$="[[!album.photos.length]]"></div>
+
+      <div class="detail">
+        <div class="album__title">[[album.title]]</div>
+        <div>
+          [[_computedPhotosLength(album.photos)]]
+          [[_computedEnabledText(album.enabled)]]
+        </div>
+      </div>
+
+      <dropdown-menu-container>
+        <goc-icon-button icon="dots-vertical"></goc-icon-button>
+
+        <template is="dom-template">
+          <button on-click="_toggleEnableAlbumTapped">[[_computedToggleAlbumText(album.enabled)]]</button>
+          <button on-click="_editAlbumTapped">[[localize('MoreMenu.Edit')]]</button>
+          <button on-click="_deleteAlbumTapped">[[localize('MoreMenu.Delete')]]</button>
+        </template>
+      </dropdown-menu-container>
+    </a>
+
+  </template>
+  <script>
+
+    class AppPhotosAlbumThumbnail extends AppLocalizeMixin(Polymer.Element) {
+
+      static get is() {return 'app-photos-album-thumbnail';}
+
+      static get properties() {
+        return {
+          
+          album: Object,
+
+          language: String,
+
+          resources: {
+            type: Object,
+            value: _ => {
+              return {
+                "en": {
+                  "PhotosLength": "{length} photos",
+                  "Empty": "Empty",
+                  "Disabled": "Disabled",
+                  "MoreMenu.Enable": "Enable",
+                  "MoreMenu.Disable": "Disable",
+                  "MoreMenu.Edit": "Edit details",
+                  "MoreMenu.Delete": "Delete album",
+                },
+                "es": {
+                  "PhotosLength": "{length} fotos",
+                  "Empty": "Vácio",
+                  "Disabled": "Desactivado",
+                  "MoreMenu.Enable": "Activar",
+                  "MoreMenu.Disable": "Desactivar",
+                  "MoreMenu.Edit": "Editar detalles",
+                  "MoreMenu.Delete": "Eliminar álbum",
+                }
+              };
+            }
+          }
+
+        };
+      }
+
+      _toggleEnableAlbumTapped() {
+        this._fire('toggle-album');
+      }
+
+      _editAlbumTapped() {
+        this._fire('edit-album');
+      }
+
+      _deleteAlbumTapped() {
+        if (confirm('Delete this album?')) {
+          this._fire('delete-album');
+        }
+      }
+
+      // Return the smallest img
+      _computedAlbumImgSrc(photo) {
+        if (photo && photo.images.length) {
+          return photo.images.sort((a,b) => {
+            return (a.width || Infinity) - (b.width || Infinity);
+          })[0].url;
+        }
+      }
+
+      _computedPhotosLength(photos) {
+        if (photos && photos.length) {
+          return this.localize('PhotosLength', 'length', photos.length);
+        }
+        return this.localize('Empty');
+      }
+
+      _computedEnabledText(enabled) {
+        if (enabled === false) {
+          return ' · ' + this.localize('Disabled');
+        }
+      }
+
+      _computedToggleAlbumText(enabled) {
+        if (enabled === false) {
+          return this.localize('MoreMenu.Enable');
+        }
+        return this.localize('MoreMenu.Disable');
+      }
+
+      _fire(eventName) {
+        this.dispatchEvent(new CustomEvent(eventName, {
+          composed: true,
+          detail: {
+            album: this.album
+          }
+        }));
+      }
+
+    }
+
+    customElements.define(AppPhotosAlbumThumbnail.is, AppPhotosAlbumThumbnail);
+
+  </script>
+</dom-module>

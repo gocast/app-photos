@@ -3,8 +3,8 @@
 <link rel="import" href="../goc-toolbar-layout/goc-app-toolbar.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
 <link rel="import" href="../goc-buttons/goc-button.html">
-<link rel="import" href="../iron-list/iron-list.html">
 
+<link rel="import" href="app-photos-album-thumbnail.html">
 <link rel="import" href="app-photos-new-album-overlay.html">
 
 <dom-module id="app-photos-albums-page">
@@ -16,17 +16,24 @@
         height: 100%;
       }
 
-      .header-layout__content {
-        max-width: 100%;
-        padding: 0;
+      [hidden] {
+        display: none !important;
       }
 
-      iron-list {
-        height: 100%;
+      .albums {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0 20px;
+      }
+
+      app-photos-album-thumbnail {
+        height: 200px;
+        width: 250px;
+        margin: 5px 5px 0 0;
       }
     </style>
 
-    <goc-toolbar-layout>
+    <goc-toolbar-layout full-width>
       <goc-app-toolbar
           slot="toolbar"
           content-name="[[contentName]]"
@@ -40,6 +47,13 @@
       </goc-app-toolbar>
 
       <div class="albums">
+        <dom-repeat id="domRepeat" items="[[_computedDomRepeatItems(data, visible)]]" as="album">
+          <template>
+            <app-photos-album-thumbnail
+                language="[[language]]"
+                album="[[album]]"></app-photos-album-thumbnail>
+          </template>
+        </dom-repeat>
       </div>
     </goc-toolbar-layout>
 
@@ -57,6 +71,8 @@
           data: Object,
 
           language: String,
+
+          visible: Boolean,
 
           contentName: String,
 
@@ -81,8 +97,79 @@
 
       constructor() {
         super();
+
         this._newAlbumOverlay = null;
-        this._newAlbumOverlayClosed = this._newAlbumOverlayClosed.bind(this);
+        this._createAlbum = this._createAlbum.bind(this);
+        this._toggleAlbum = this._toggleAlbum.bind(this);
+        this._editAlbum = this._editAlbum.bind(this);
+        this._deleteAlbum = this._deleteAlbum.bind(this);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this._toggleListeners({enable: true});
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this._toggleListeners({enable: false});
+      }
+
+      _toggleListeners({enable}) {
+        const m = enable ? 'addEventListener' : 'removeEventListener';
+
+        this[m]('toggle-album', this._toggleAlbum);
+        this[m]('edit-album', this._editAlbum);
+        this[m]('delete-album', this._deleteAlbum);
+      }
+
+      _toggleAlbum(event) {
+        const album = event.detail.album;
+        const model = this.$.domRepeat.modelForElement(event.composedPath()[0]);
+
+        model.set('album.enabled', album.enabled === false ? true : false);
+        this.dispatchEvent(new Event('trigger-update', {composed: true}));
+      }
+
+      _editAlbum(event) {
+        if (this._newAlbumOverlay) {
+          return;
+        }
+
+        const album = event.detail.album;
+        const model = this.$.domRepeat.modelForElement(event.composedPath()[0]);
+        const overlay = document.createElement('app-photos-new-album-overlay')
+        overlay.albums = this.data.albums;
+        overlay.album = album;
+        overlay.language = this.language;
+        overlay.onDetach = _ => this._newAlbumOverlay = null;        
+
+        overlay.addEventListener('overlay-close-animation-finish', event => {
+          if (!event.currentTarget.canceled) {
+            const title = event.currentTarget.$.titleInput.value;
+            this._saveEditAlbum(model, {title});
+          }
+        });
+
+        this._newAlbumOverlay = overlay;
+        overlay.open();
+      }
+
+      _saveEditAlbum(model, props) {
+        for (let key in props) {
+          model.set(`album.${key}`, props[key]);
+        }
+
+        this.dispatchEvent(new Event('trigger-update', {composed: true}));
+      }
+
+      _deleteAlbum(event) {
+        const album = event.detail.album;
+        const index = this.data.albums.indexOf(album);
+
+        this.splice('data.albums', index, 1);
+        this.$.domRepeat.render();
+        this.dispatchEvent(new Event('trigger-update', {composed: true}));
       }
 
       _createAlbumTapped() {
@@ -95,28 +182,34 @@
         overlay.language = this.language;
         overlay.onDetach = _ => this._newAlbumOverlay = null;
 
-        overlay.addEventListener('overlay-close-animation-finish',
-          this._newAlbumOverlayClosed);
+        overlay.addEventListener('overlay-close-animation-finish', event => {
+          if (!event.currentTarget.canceled) {
+            const title = event.currentTarget.$.titleInput.value;
+            this._createAlbum({title});
+          }
+        });
 
         this._newAlbumOverlay = overlay;        
         overlay.open();
       }
 
-      _newAlbumOverlayClosed(event) {
-        if (!event.currentTarget.canceled) {
-          const title = event.currentTarget.$.titleInput.value;
+      _createAlbum(props) {
+        window.history.pushState({}, null, `#/album/${props.title}`);
+        window.dispatchEvent(new Event('location-changed'));
 
-          window.history.pushState({}, null, `#/album/${title}`);
-          window.dispatchEvent(new Event('location-changed'));
+        this.push('data.albums', Object.assign({
+          enabled: true,
+          photos: []
+        }, props));
 
-          this.push('data.albums', {
-            title,
-            enabled: true,
-            photos: []
-          });
+        this.dispatchEvent(new Event('trigger-update', {composed: true}));
+      }
 
-          this.dispatchEvent(new Event('trigger-update', {composed: true}));
+      _computedDomRepeatItems(data, visible) {
+        if (visible) {
+          return data.albums;
         }
+        return [];
       }
 
     }

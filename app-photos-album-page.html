@@ -8,7 +8,6 @@
 <link rel="import" href="../dropdown-menu/dropdown-menu-container.html">
 <link rel="import" href="../iron-image/iron-image.html">
 <link rel="import" href="../selectable-item/selectable-group.html">
-<link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="app-photos-new-album-overlay.html">
 
 <dom-module id="app-photos-album-page">
@@ -28,21 +27,21 @@
         display: none;
       }
 
-      iron-list {
-        height: 100%;
-      }
-
-      .photo {
+      selectable-group {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 160px;
-        height: 160px;
+        flex-wrap: wrap;
+        padding: 0 20px;
       }
 
-      .photo__iron-image {
-        width: calc(100% - 8px);
-        height: calc(100% - 8px);
+      selectable-item {
+        height: 160px;
+        margin: 5px 5px 0 0;
+        width: 160px;
+      }
+
+      selectable-item iron-image {
+        width: 100%;
+        height: 100%;
       }
 
       /* disabled album message */
@@ -148,20 +147,18 @@
           id="selectableGroup"
           selection="{{_selection}}"
           hidden="[[_computedEmptyPhotos(_album, _album.photos.length)]]">
-
-        <iron-list id="ironList" items="[[_album.photos]]" grid>
+        
+        <dom-repeat id="domRepeat" items="[[_computedDomRepeatItems(_album, visible)]]">
           <template>
-            <!-- photo element -->
-            <selectable-item class="photo">
+            <selectable-item>
               <iron-image
-                  class="photo__iron-image"
                   src="[[_computedThumbnailUrl(item.images)]]"
                   preload
                   sizing="cover"
                   on-error="_imageLoadError"></iron-image>
             </selectable-item>
           </template>
-        </iron-list>
+        </dom-repeat>
       </selectable-group>
 
     </goc-toolbar-layout>
@@ -267,8 +264,8 @@
           this._cancelSelection();
 
           selection.forEach(el => {
-            const photo = this.$.ironList.modelForElement(el).item;
-            this.splice('_album.photos', this._album.photos.indexOf(photo), 1);
+            const model = this.$.domRepeat.modelForElement(el);
+            this.splice('_album.photos', this._album.photos.indexOf(model.item), 1);
           });
 
           this._dispatchTriggerUpdate();
@@ -285,14 +282,13 @@
         overlay.albums = this.data.albums;
         overlay.album = this._album;
         overlay.language = this.language;
-        overlay.resources = this.resources;
         overlay.onDetach = _ => this._newAlbumOverlay = null;
 
         overlay.addEventListener('overlay-closed', event => {
           if (!event.currentTarget.canceled) {
             const title = event.currentTarget.$.titleInput.value;
-            this.set('album.title', title);
-            this._triggerUpdate({inmediate: true});
+            this.set('_album.title', title);
+            this._dispatchTriggerUpdate({inmediate: true});
           }
         });
 
@@ -352,6 +348,32 @@
         }
       }
 
+      _imageLoadError(event) {
+        const item = event.model.item;
+        const images = item.images;
+
+        if (!images) {
+          return;
+        }
+
+        const original = images.find(item => {
+          const reg = new RegExp(`-${item.width}-${item.height}\\.\\w+`);
+          return !item.url.match(reg);
+        });
+
+        const filename = original.url.match(/\/([^\/]*)$/)[1];
+        const parts = filename.split('.');
+        parts.pop();
+        const name = parts.join('.');
+        const file = this._uploadedFiles[name];
+
+        if (file) {
+          const tmpUrl = URL.createObjectURL(file);
+          event.currentTarget.src = tmpUrl;
+          this._uploadedFiles[name] = null;
+        }
+      }
+
       _goToAlbums() {
         window.history.pushState({}, null, '#');
         window.dispatchEvent(new CustomEvent('location-changed'));
@@ -359,8 +381,6 @@
 
       _onToggleEnableAlbumTapped(event) {
         this.set('_album.enabled', this._album.enabled === false ? true : false);
-
-
       }
 
       _dispatchTriggerUpdate({inmediate = true} = {}) {
@@ -371,6 +391,13 @@
             inmediate: inmediate
           }
         }));
+      }
+
+      _computedDomRepeatItems(_album, visible) {
+        if (visible && _album) {
+          return _album.photos;
+        }
+        return [];
       }
 
       _computedBoolean(value) {

@@ -15,7 +15,6 @@
     "input-file": "git@github.com:sharedlabs/input-file.git",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0-preview",
     "iron-image": "PolymerElements/iron-image#2.0-preview",
-    "iron-list": "PolymerElements/iron-list#2.0-preview",
     "iron-pages": "PolymerElements/iron-pages#2.0-preview",
     "offthread-image": "git@github.com:sharedlabs/offthread-image.git",
     "overlay-container": "git@github.com:sharedlabs/overlay-container.git",
@@ -31,6 +30,11 @@
   },
   "resolutions": {
     "polymer": "v2.0.0-rc.7",
-    "webcomponentsjs": "v1.0.0-rc.5"
+    "webcomponentsjs": "v1.0.0-rc.5",
+    "iron-flex-layout": "2.0-preview",
+    "iron-image": "2.0-preview",
+    "iron-icon": "2.0-preview",
+    "iron-iconset-svg": "2.0-preview",
+    "iron-meta": "2.0-preview"
   }
 }
