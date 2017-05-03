@@ -155,7 +155,7 @@
                   src="[[_computedThumbnailUrl(item.images)]]"
                   preload
                   sizing="cover"
-                  on-error="_imageLoadError"></iron-image>
+                  on-error-changed="_imageLoadError"></iron-image>
             </selectable-item>
           </template>
         </dom-repeat>
@@ -339,6 +339,7 @@
               }
 
               this.push('_album.photos', {images: file.images});
+              this.$.domRepeat.render();
 
               this._dispatchTriggerUpdate({
                 inmediate: this._uploadingFiles % 3 === 0
@@ -349,6 +350,10 @@
       }
 
       _imageLoadError(event) {
+        if (!event.detail.value) {
+          return;
+        }
+
         const item = event.model.item;
         const images = item.images;
 
