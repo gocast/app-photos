@@ -68,6 +68,7 @@
 
           data: {
             type: Object,
+            observer: '_dataChanged',
             value: _ => {
               return {albums: []};
             }
@@ -122,6 +123,13 @@
       _toggleListeners({enable}) {
         const m = enable ? 'addEventListener' : 'removeEventListener';
         this[m]('trigger-update', this._onTriggerUpdate);
+      }
+
+      // Ensure data integrity.
+      _dataChanged() {
+        if (!this.data || !this.data.albums) {
+          this.data = {albums: []};
+        }
       }
 
       _routePageChanged(page) {
